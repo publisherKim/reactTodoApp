@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "include-media": "^1.4.9",
+    "node-sass": "^4.9.3",
+    "open-color": "^1.6.3",
+    "sass-loader": "^7.1.0"
+  }
+}
