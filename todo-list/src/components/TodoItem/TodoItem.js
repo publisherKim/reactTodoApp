@@ -8,8 +8,8 @@ class TodoItem extends Component {
   render() {
     const {done, children, onToggle, onRemove} = this.props;
     return (
-      <div className={cx('todo-item')} onclick={onToggle}>
-        <input className={cx('tick')} type="checkbox" checked={done} />
+      <div className={cx('todo-item')} onClick={onToggle}>
+        <input className={cx('tick')} type="checkbox" checked={done} readOnly/>
         <div className={cx('tick', {done})}>{children}</div>
         <div className={cx('delete')} onClick={onRemove}>[지우기]</div>
       </div>
