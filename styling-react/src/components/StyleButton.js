@@ -6,6 +6,7 @@ const Wrapper = styled.div`
   display: inline-block;
   padding: 1rem;
   border-radius: 3px;
+  font-size: ${(props) => props.fontSize};
   &:hover {
     background: black;
     color: white;
@@ -14,7 +15,7 @@ const Wrapper = styled.div`
 
 const StyledButton = ({children, ...rest}) => {
   return (
-    <Wrapper {...rest}>
+    <Wrapper font-size="1.25rem" {...rest}>
       {children}
     </Wrapper>
   )
