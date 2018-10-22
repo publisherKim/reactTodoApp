@@ -5,7 +5,11 @@ import TodoList from './TodoList';
 
 class App extends Component {
   state = {
-    userTodo: ''
+    userTodo: '',
+    todosList: [
+      { id: 0, text: '리액트 공부하기', done: true },
+      { id: 1, text: '컴포넌트 스라일링 해보기', done: false }
+    ]
   }
 
   handleChange = (e) => {
@@ -16,16 +20,16 @@ class App extends Component {
   }
 
   render() {
-    const { userTodo } = this.state;
+    const { userTodo, todosList } = this.state;
     const {
       handleChange
     } = this;
-    console.log(this, 'class안에서 this는 파일 그자체 여기선 App');
+
     return (
       <div>
         <PageTemplate>
           <TodoInput onChange={handleChange} value={userTodo}></TodoInput>
-          <TodoList></TodoList>
+          <TodoList todosList={todosList}></TodoList>
         </PageTemplate>
       </div>
     );
