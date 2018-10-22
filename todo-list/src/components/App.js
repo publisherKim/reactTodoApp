@@ -35,22 +35,54 @@ class App extends Component {
 
     this.setState({
       todosList: [...todosList, newTodo],
-      input: ''
+      userTodo: ''
     });
+  }
+
+  handleToggle = (id) => {
+    const {todosList} = this.state;
+    const index = todosList.findIndex( item => item.id === id);
+
+    const toggled = {
+      ...todosList[index],
+      done: !todosList[index].done
+    };
+
+    this.setState({
+      todosList: [
+        ...todosList.slice(0, index),
+        toggled,
+        ...todosList.slice(index + 1, todosList.length)
+      ]
+    })
+  }
+
+  handleRemove = (id) => {
+    const {todosList} = this.state;
+    const index = todosList.findIndex( item => item.id === id);
+
+    this.setState({
+      todosList: [
+        ...todosList.slice(0, index),
+        ...todosList.slice(index + 1, todosList.length)
+      ]
+    })
   }
 
   render() {
     const { userTodo, todosList } = this.state;
     const {
       handleChange,
-      handleInsert
+      handleInsert,
+      handleToggle,
+      handleRemove
     } = this;
 
     return (
       <div>
         <PageTemplate>
           <TodoInput onChange={handleChange} onInsert={handleInsert} value={userTodo}></TodoInput>
-          <TodoList todosList={todosList}></TodoList>
+          <TodoList todosList={todosList} onToggle={handleToggle} onRemove={handleRemove}></TodoList>
         </PageTemplate>
       </div>
     );
