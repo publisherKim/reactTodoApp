@@ -7,6 +7,7 @@ const Counter = ({number, color, onIncrement, onDecrement, onSetColor}) => {
     <div
       className="Counter"
       onClick={onIncrement}
+      // mounst right click => onContextMenu
       onContextMenu={(e) => {
         e.preventDefault();
         onDecrement();
