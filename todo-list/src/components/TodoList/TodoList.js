@@ -3,7 +3,6 @@ import TodoItem from '../TodoItem';
 
 class TodoList extends Component {
   shouldComponentUpdate(nextProps, nextState) {
-    console.log(this.props.todosList !== nextProps.todosList);
     return this.props.todosList !== nextProps.todosList;
   }
   render() {
