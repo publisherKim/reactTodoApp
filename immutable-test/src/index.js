@@ -14,3 +14,4 @@ const list3 = fromJS([
   {value: 4}
 ]);
 console.log(list3);
+console.log(list3.toJS());
