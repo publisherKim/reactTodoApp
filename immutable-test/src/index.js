@@ -42,3 +42,6 @@ console.log(list.toJS(), list.get(list.toJS().length - 1));
 const newList7 = list.pop();
 console.log(newList7.toJS(), list.get(newList7.toJS().length - 1));
 
+// list 크기 가져오기
+console.log(list.size);
+console.log(list.isEmpty());
