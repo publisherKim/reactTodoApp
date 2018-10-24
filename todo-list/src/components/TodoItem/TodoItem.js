@@ -6,8 +6,6 @@ const cx = classNames.bind(styles);
 
 class TodoItem extends Component {
   shouldComponentUpdate(nextProps, nextState) {
-    console.log(this.props.done !== nextProps.done);
-    // data의 속성이 어느 컴포넌트에서 변할지를 비교하여 성능을 최적화 할때 필요하다.
     return this.props.done !== nextProps.done;
   }
   render() {
