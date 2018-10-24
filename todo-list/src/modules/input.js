@@ -10,6 +10,7 @@ const initialState = Map({
 
 export default handleActions({
   SET_INPUT: (state, action) => {
+    console.log(state, action, action.payload);
     return state.set('value', action.payload);
   }
 }, initialState);

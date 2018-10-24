@@ -6,7 +6,6 @@ class TodoList extends Component {
     return this.props.todosList !== nextProps.todosList;
   }
   render() {
-    console.log(this.props);
     const { todos, onToggle, onRemove } = this.props;
     const todoList = todos.map(
       todo => (

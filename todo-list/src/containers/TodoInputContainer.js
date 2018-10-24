@@ -17,16 +17,20 @@ class TodoInputContainer extends Component {
   handleChange = (e) => {
     const { value } = e.target;
     const { InputActions } = this.props;
+    console.log(value);
     InputActions.setInput(value);
   }
 
   handleInsert = () => {
     const { InputActions, TodosActions, value } = this.props;
+    console.log(value, this.props);
     const todo = {
       id: this.getId(),
       text: value,
       done: false
     };
+    console.log('TodosActions: ',
+      TodosActions);
     TodosActions.insert(todo);
     InputActions.setInput('');
   }
@@ -48,9 +52,9 @@ class TodoInputContainer extends Component {
 
 export default connect(
   (state) => ({
-    values: state.input.get('value')
+    value: state.input.get('value')
   }),
-  dispatch => ({
+  (dispatch) => ({
     InputActions: bindActionCreators(inputActions, dispatch),
     TodosActions: bindActionCreators(todosActions, dispatch)
   })
