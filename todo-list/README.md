@@ -1,24 +1,14 @@
-# state manage(상태 관리)
+# crud
 ```
-  1. 가능한 상위 컴포넌트인 App에서 관리하는것이 좋다.
-  2. 단방향 상속을 이용하는게 인간의 머리가 이해하는데 인식이 용이하다.
-  (양방향 및 ref등을 활용할수록 복잡도는 증대된다.)
-  3. state 값과 메서드를 props로 하위 컴포넌트에서 전달해서 관리해서 쓰는 편이 쉽다.
-  4. 단 천재라면 상관없다.
+  create 쓰다(생성)
+  read  읽다(불러오다)
+  update 수정(최신화, 동기화)
+  delete 삭제(지우다)
 ```
-
-## 텍스트 입력 관련 상태 관리 만들기
+## create
 ```
-  1. TodoInput 컴포넌트가 사용할 input 상태부터 관리
-  2. App.js Class를 활용하여 state에 input 기본값 설정
-  3. input의 변경 이벤트를 처리할 handleChange 메서드 만들기
-  4. TodoInput 컴포넌트의 props에 전달하기
-```
-
-## 초기 일정 테이터 정의 및 렌더링
-```
-  1. state todos array append
-  2. default value config
-  3. object porps id, text, done
-  4. let's do it
+  0. 추가된 데이터를 list에 렌더링하기
+  1. handleInsert 메서드 정의
+  2. 새로운 데이터 객체를 만들어 todos데이터 값 전달하기
+  3. id 값은 새로 추가 될때마다 1씩 더해주기
 ```
