@@ -3,7 +3,7 @@ import TodoItem from '../TodoItem';
 
 class componentName extends Component {
   render() {
-    const {  todos } = this.props;
+    const { todos } = this.props;
     const todoList = todos.map(
       todo => (
         <TodoItem
