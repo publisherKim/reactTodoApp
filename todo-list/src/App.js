@@ -5,7 +5,11 @@ import TodoList from './components/TodoList/TodoList';
 
 class App extends Component {
   state = {
-    input: ''
+    input: '',
+    todos: [
+      { id: 0, text: '리액트 공부하기', done: true },
+      { id: 1, text: '카프카 공부하기 뒈질듯 ㅠㅠ', done: false }
+    ]
   }
 
   handleChange = (e) => {
@@ -16,16 +20,16 @@ class App extends Component {
   }
 
   render() {
-    const { input } = this.state;
+    const { input, todos } = this.state;
     const {
       handleChange
     } = this;
-    // handleChange  => this.handleChange 와 동치 문장이다.
+
     return (
       <div>
         <PageTemplate>
           <TodoInput onChange={handleChange} value={input}></TodoInput>
-          <TodoList></TodoList>
+          <TodoList todos={todos}></TodoList>
         </PageTemplate>
       </div>
     );

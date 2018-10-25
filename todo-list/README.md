@@ -14,3 +14,11 @@
   3. input의 변경 이벤트를 처리할 handleChange 메서드 만들기
   4. TodoInput 컴포넌트의 props에 전달하기
 ```
+
+## 초기 일정 테이터 정의 및 렌더링
+```
+  1. state todos array append
+  2. default value config
+  3. object porps id, text, done
+  4. let's do it
+```
