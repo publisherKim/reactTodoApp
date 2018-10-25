@@ -1,39 +1,8 @@
-# component layout, design
+# state manage(상태 관리)
 ```
-components/
-  PageTemplate: 인터페이싀 전체적인 틀 설정
-  TodoInput: 일정추가 
-  TodoItem: 목록화면 지우기 done check
-  TodoList: 목록화면을 위한 변환 처리
-````
-## component make order
-```
-  1. 디렉터리 만들기
-  2. 자바스크립트 파일 만들기
-  3. Sass 파일 만들기
-  4. index.js 파일 만들기
-```
-
-### TodoInput make recursive 1 SET
-```
-  1. 디렉터리 만들기
-  2. 자바스크립트 파일 만들기
-  3. Sass 파일 만들기
-  4. index.js 파일 만들기
-```
-
-### TodoItem make recursive 2 SET
-```
-  1. 디렉터리 만들기
-  2. 자바스크립트 파일 만들기
-  3. Sass 파일 만들기
-  4. index.js 파일 만들기
-```
-
-### TodoList make recursive 3 SET
-```
-  1. 디렉터리 만들기
-  2. 자바스크립트 파일 만들기
-  3. index.js 파일 만들기
-  4. 껍데기라 css가 따로 필요 없다.
+  1. 가능한 상위 컴포넌트인 App에서 관리하는것이 좋다.
+  2. 단방향 상속을 이용하는게 인간의 머리가 이해하는데 인식이 용이하다.
+  (양방향 및 ref등을 활용할수록 복잡도는 증대된다.)
+  3. state 값과 메서드를 props로 하위 컴포넌트에서 전달해서 관리해서 쓰는 편이 쉽다.
+  4. 단 천재라면 상관없다.
 ```
