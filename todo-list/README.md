@@ -18,5 +18,5 @@
   0. 체크박스를 클릭한 데이터 업데이트하기
   1. 원하는 데이터를 아이디로 찾기
   2. slice와 전개연산자를 사용해서 새배열 업데이트하기
-  3. hadleToggle method 정의해서 TodoList에 onToggle props로 전달하기
+  3. handleToggle method 정의해서 TodoList에 onToggle props로 전달하기
 ```
