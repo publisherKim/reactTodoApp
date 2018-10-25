@@ -5,16 +5,16 @@ import TodoList from './components/TodoList/TodoList';
 
 class App extends Component {
   state = {
-    value: ''
+    input: ''
   }
 
-  handleChange(e) {
+  handleChange = (e) => {
     const {value} = e.target;
-
     this.setState({
       input: value
     });
   }
+
   render() {
     const { input } = this.state;
     const {
