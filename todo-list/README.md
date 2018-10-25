@@ -14,7 +14,15 @@ components/
   4. index.js 파일 만들기
 ```
 
-### Todo Input make recursive 1 SET
+### TodoInput make recursive 1 SET
+```
+  1. 디렉터리 만들기
+  2. 자바스크립트 파일 만들기
+  3. Sass 파일 만들기
+  4. index.js 파일 만들기
+```
+
+### TodoItem make recursive 2 SET
 ```
   1. 디렉터리 만들기
   2. 자바스크립트 파일 만들기
