@@ -17,6 +17,18 @@ class App extends Component {
     return ++this.id;
   }
 
+  handleRemove = (id) => {
+    const { todos } = this.state;
+    const index = todos.findIndex( todo => todo.id === id);
+
+    this.setState({
+      todos: [
+        ...todos.slice(0, index),
+        ...todos.slice(index + 1, todos.length)
+      ]
+    });
+  }
+
   handleToggle = (id) => {
     const { todos } = this.state;
     const index = todos.findIndex( todo => todo.id === id);
@@ -63,14 +75,15 @@ class App extends Component {
     const {
       handleChange,
       handleInsert,
-      handleToggle
+      handleToggle,
+      handleRemove
     } = this;
 
     return (
       <div>
         <PageTemplate>
           <TodoInput onChange={handleChange} onInsert={handleInsert} value={input}></TodoInput>
-          <TodoList todos={todos} onToggle={handleToggle}></TodoList>
+          <TodoList todos={todos} onToggle={handleToggle} onRemove={handleRemove}></TodoList>
         </PageTemplate>
       </div>
     );
