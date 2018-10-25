@@ -1,11 +1,14 @@
 import React, { Component } from 'react';
 import PageTemplate from './components/PageTemplate';
+import TodoInput from './components/TodoInput/TodoInput';
 
 class App extends Component {
   render() {
     return (
       <div>
-        <PageTemplate>안녕하세요</PageTemplate>
+        <PageTemplate>
+          <TodoInput></TodoInput>
+        </PageTemplate>
       </div>
     );
   }
