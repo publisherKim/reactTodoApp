@@ -20,3 +20,11 @@
   2. slice와 전개연산자를 사용해서 새배열 업데이트하기
   3. handleToggle method 정의해서 TodoList에 onToggle props로 전달하기
 ```
+
+## delete
+```
+  0. 제거는 매우 쉽다.
+  1. handleRemove 메서드 정의
+  2. id를 찾아 제거하는 로직 작성
+  3. TodoList에 onRemove props로 전달
+```
