@@ -6,3 +6,11 @@
   3. state 값과 메서드를 props로 하위 컴포넌트에서 전달해서 관리해서 쓰는 편이 쉽다.
   4. 단 천재라면 상관없다.
 ```
+
+## 텍스트 입력 관련 상태 관리 만들기
+```
+  1. TodoInput 컴포넌트가 사용할 input 상태부터 관리
+  2. App.js Class를 활용하여 state에 input 기본값 설정
+  3. input의 변경 이벤트를 처리할 handleChange 메서드 만들기
+  4. TodoInput 컴포넌트의 props에 전달하기
+```
