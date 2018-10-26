@@ -4,5 +4,5 @@
   1. 소규모 앱 (데이터의 변화 작은경우) 불필요
   2. 가상돔의 렌더링 체크하는것 조차 줄일 필요가 있다.(엔진의 연산 보호)
   3. 필수 라이프싸이클 shouldComponentUpdate (조건에따라 render()를 중지 가능)
-  4. chrome: react 개발자도구를 활용한다.
+  4. chrome: react 개발자도구를 활용한다.(performence tab을 활용해도 좋다.)
 ```
