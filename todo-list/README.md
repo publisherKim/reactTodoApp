@@ -6,3 +6,12 @@
   3. 필수 라이프싸이클 shouldComponentUpdate (조건에따라 render()를 중지 가능)
   4. chrome: react 개발자도구를 활용한다.(performence tab을 활용해도 좋다.)
 ```
+
+## test data ready
+```
+  1. 가상의 데이터를 만들어 채운다.
+```
+
+## Todolist 컴포넌트의 todos props가 변경될때만 리렌더링 되게 적용한다.
+
+## TodoItem 컴포넌트의 최적화

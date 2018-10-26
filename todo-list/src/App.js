@@ -3,16 +3,18 @@ import PageTemplate from './components/PageTemplate';
 import TodoInput from './components/TodoInput/TodoInput';
 import TodoList from './components/TodoList/TodoList';
 
+const initialTodos = new Array(500).fill(0).map(
+  (item, index) => ({id: index, text: `일정 ${item}${index}`, done: false})
+);
+
 class App extends Component {
+
   state = {
     input: '',
-    todos: [
-      { id: 0, text: '리액트 공부하기', done: true },
-      { id: 1, text: '카프카 공부하기 뒈질듯 ㅠㅠ', done: false }
-    ]
+    todos: initialTodos
   }
 
-  id = 1;
+  id = initialTodos.length;
   getId = () => {
     return ++this.id;
   }
