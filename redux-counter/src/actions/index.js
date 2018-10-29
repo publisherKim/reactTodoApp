@@ -1,5 +1,14 @@
 import * as types from './ActionTypes';
 
+export const creative = (color) => ({
+  type: types.CREATE,
+  color
+});
+
+export const remove = () => ({
+  type: types.REMOVE
+});
+
 export const increment = () => ({
   type: types.INCREMENT
 });
