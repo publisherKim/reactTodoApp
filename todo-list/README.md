@@ -13,5 +13,15 @@
 ```
 
 ## Todolist 컴포넌트의 todos props가 변경될때만 리렌더링 되게 적용한다.
-
+```javascript
+  shouldComponentUpdate(nextProps, nextState) {
+    return this.props.todos !== nextProps.todos;
+  }
+  // 조건에따라 컴포넌트를 업데이트할지 말지 결정할 라이프 싸이클을 활용한다.
+```
 ## TodoItem 컴포넌트의 최적화
+```javascript
+  shouldComponentUpdate(nextProps, nextState) {
+    return this.props.done !== nextProps.done;
+  }
+```
