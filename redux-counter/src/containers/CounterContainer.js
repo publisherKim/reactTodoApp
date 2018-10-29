@@ -26,8 +26,8 @@ export const getRandomColor = () => {
 
 // get define
 const mapStateToProps = (state) => ({
-  color: state.color,
-  number: state.number
+  color: state.colorData.color,
+  number: state.numberData.number
 });
 
 // action fetch define
