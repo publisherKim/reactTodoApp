@@ -5,7 +5,7 @@ const initialState = {
   number: 0
 };
 
-export const counter = (state = initialState, action) => {
+const counter = (state = initialState, action) => {
   switch (action.type) {
     case types.INCREMENT:
       return {
@@ -26,3 +26,5 @@ export const counter = (state = initialState, action) => {
       return state;
   }
 };
+
+export default counter;
