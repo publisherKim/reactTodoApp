@@ -1,6 +1,6 @@
 import * as types from './ActionTypes';
 
-export const creative = (color) => ({
+export const create= (color) => ({
   type: types.CREATE,
   color
 });
