@@ -19,3 +19,9 @@
     - 카운터 만들기
     - 카운터 여러개 만들기
 ```
+
+### start
+```
+  create-react-app redux-counter
+  yarn add react-redux
+```
