@@ -8,3 +8,36 @@ const REMOVE = 'todos/REMOVE';
 export const insert = createAction(INSERT);
 export const toggle = createAction(TOGGLE);
 export const remove = createAction(REMOVE);
+
+const initialState = List([
+  Map({
+    id: 0,
+    text: '리액트 공부하기',
+    done: true
+  }),
+  Map({
+    id: 1,
+    text: '카프카 공부하기 피똥 가즈아',
+    done: false
+  })
+]);
+
+export default handleActions({
+  [INSERT]: (state, action) => {
+    const { id, text, done } = action.payload;
+    
+    return state.push(Map({
+      id,
+      text,
+      done
+    }));
+  },
+  [TOGGLE]: (state, action) => {
+    const { payload: index } = action;
+    return state.updateIn([index, 'done'], done => !done);
+  },
+  [REMOVE]: (state, action) => {
+    const { payload: index } = action;
+    return state.delete(index);
+  }
+}, initialState);
