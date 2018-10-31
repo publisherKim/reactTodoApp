@@ -49,7 +49,7 @@
 ```
 ## 규칙
 ```
-  - export default를 이용하요 리듀서를 내보내기
+  - export default를 이용하여 리듀서를 내보내기
   - export를 이용하여 액션 생성 함수를 내보내기
   - 액션 타입이름은 npm-module-or-app/reducer/ACTION_TYPE 형식 권장 ex: counter/INCREMENT
   - 외부 리듀서에서 모듈의 액션 타입이 필요할 떄는 액션 타입을 내보내도 됨(타입은 공유해도 된다.)
