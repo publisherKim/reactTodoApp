@@ -15,7 +15,7 @@ class componentName extends Component {
           onToggle={() => onToggle(todo.get('id'))}
           onRemove={() => onRemove(todo.get('id'))}
         >
-          {todo.text}
+          {todo.get('text')}
         </TodoItem>
       )
     );
