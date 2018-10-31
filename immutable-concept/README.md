@@ -82,3 +82,7 @@
   object1 === object2;  // false
   // 간략하고 편리하게 해준다.
 ```
+## yarn
+```
+  yarn add immutable
+```
