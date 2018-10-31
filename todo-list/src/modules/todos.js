@@ -33,11 +33,13 @@ export default handleActions({
     }));
   },
   [TOGGLE]: (state, action) => {
-    const { payload: index } = action;
+    const { payload: id } = action;
+    const index = state.findIndex(todo => todo.get('id') === id);
     return state.updateIn([index, 'done'], done => !done);
   },
   [REMOVE]: (state, action) => {
-    const { payload: index } = action;
+    const { payload: id } = action;
+    const index = state.findIndex(todo => todo.get('id') === id);
     return state.delete(index);
   }
 }, initialState);
