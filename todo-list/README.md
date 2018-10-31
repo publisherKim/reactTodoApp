@@ -40,7 +40,7 @@
   }
 
   // 리듀서
-  export default function reducer( state = initialState, action) {
+  export default function reducer(state = initialState, action) {
     switch (action.type) {
       // 리듀서 관련 코드...
     }
@@ -53,4 +53,54 @@
   - export를 이용하여 액션 생성 함수를 내보내기
   - 액션 타입이름은 npm-module-or-app/reducer/ACTION_TYPE 형식 권장 ex: counter/INCREMENT
   - 외부 리듀서에서 모듈의 액션 타입이 필요할 떄는 액션 타입을 내보내도 됨(타입은 공유해도 된다.)
+```
+
+## reducks를 편리하게 쓰기위한 모듈 추가
+```
+  yarn add redux-actions
+```
+### createAction을 이용한 생성 자동화
+```javascript
+  export const increment = (index) => ({
+    type: types.INCREMENT,
+    index
+  });
+
+  export const decrement = (index) => ({
+    type: types.DECREMENT,
+    index
+  });
+
+  // createAction을 통한 간소화
+  export const increment = createAction(types.INCREMENT);
+  export const decrement = createAction(types.DECREMENT);
+  // 사용 방법과 결과
+  increment(3);
+  {
+    type: 'INCREMENT',
+    payload: 3
+  }
+  
+  // parameter가 복수일때
+  export const setColor = createAction(types.SET_COLOR);
+  setColor({index: 5, color: '#fff'});
+  {
+    type: 'SET_COLOR',
+    payload: {
+      index: 5,
+      color: '#fff'
+    }
+  }
+  // 명시화 하는 방법
+  export const setColor = createAction(types.SET_COLOR, ({index, color}) => ({index, color});
+
+  // 리듀서에 switch 문 대신 handleActions 사용
+  const reducer = handleActions({
+    INCREMENT: (state, action) => ({
+      counter: state.counter + action.payload
+    }),
+    DECREMENT: (state, action) => ({
+      counter: state.counter - action.payload
+    })
+  }, {counter: 0});
 ```
