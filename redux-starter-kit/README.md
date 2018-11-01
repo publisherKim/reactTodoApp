@@ -48,3 +48,31 @@
   cd redux-starter-kit
   yarn
 ```
+### 미들웨어 도식화
+```
+  stroe.dispatch
+    
+    미들웨어1         ->          next()        ->          미들웨어2
+    
+    유저엑션                                                리듀서
+
+    1. 유저액션 발생
+    2. store.dispatch
+    3. 미들웨어1
+    4. next호출
+    5. 미들웨어2
+    6. 리류서로 전달
+```
+
+### 비동기 작업을 처리하는 미들웨어 사용
+```
+  현재 공개된 3가지
+  1. redux-thunk
+  2. redux-promise-middleware
+  3. redux-pender
+```
+
+### redux-logger 라이브러리 사용
+```
+  yarn add redux-logger
+```
