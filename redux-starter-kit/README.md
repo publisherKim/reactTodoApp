@@ -63,6 +63,10 @@
     5. 미들웨어2
     6. 리류서로 전달
 ```
+### redux-logger 라이브러리 사용
+```
+  yarn add redux-logger
+```
 
 ### 비동기 작업을 처리하는 미들웨어 사용
 ```
@@ -70,9 +74,4 @@
   1. redux-thunk
   2. redux-promise-middleware
   3. redux-pender
-```
-
-### redux-logger 라이브러리 사용
-```
-  yarn add redux-logger
 ```
