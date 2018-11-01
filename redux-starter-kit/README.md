@@ -75,3 +75,73 @@
   2. redux-promise-middleware
   3. redux-pender
 ```
+
+### redux-thunk 비동기 액션처리
+```
+  1. redux-thunk 사용하기
+  2. thunk로 웹 요청 다루기
+  3. redux-promise-middleware로 웹 요청 다루기
+  4. redux-pender로 웹 요청 다루기
+```
+
+### redux-thunk란 ?
+```javascript
+  /*
+  리덕스를 사용하는 어플리케이션에서 비동기 작업을 처리할때 가장 기본적인 방법은 redux-thunk 미들웨어를 이용
+  매우 직관적이며 간단하게 비동기 작업을 관리 가능
+  */
+
+  //thunk란 특정 작업을 나중에 할수 있도록 미루려고 함수 형태로 감싼 것을 의미 
+  const x = 1 + 2; // (즉시에 연산이 처리되어 할당됨)
+  const foo = () => 1 + 2 // (함수 호출시 연산되어 값을 반환함)
+```
+
+### redux-thunk role
+```javascript
+  /*
+  이 미들웨어는 객체가 아닌 함수도 디스패치 할수 있게 해준다.
+  일반 액션 객체로는 특정 액션을 디스패치 한 후 몇 초 뒤에 실제로 반영시키거나 현재 상태에 따라 아예 무시하게 만들수 없다.
+  redux-thunk 미들웨어는 함수를 디스패치 할 수 있게 함으로써 일반 액션 객체로는 할 수 없는 작업들도 할 수 있게 한다.
+  1초뒤 액션이 디스패치 되는 예제코드
+  */
+  const INCREMENT_COUNTER = 'INCREMENT_COUNTER';
+
+  function increment() {
+    return {
+      type: INCREMENT_COUNTER
+    }
+  }
+
+  // store.dispatch(incrementAsync())를 했을때 INCREMENT_COUNTER 액션을 1초 뒤에 디스패치한다.
+  function incrementAsync() { // dispatch를 파라미터로 가지는 함수를 리턴
+    return dispatch => {
+      setTimeout(() => {
+        dispatch(increment());
+      }, 1000);
+    }
+  }
+
+  // 조건에따라 액션을 디스패치하거나 무시하는 코드
+  function incrementIfOdd() {
+    return (dispatch, getState) => {
+      // dispatch, getState를 파라미터로 전달하면 스토어상태에도 접근 가능
+      const { counter } = getState();
+
+      if (counter % 2 === 0) {
+        return;
+      }
+
+      dispatch(increment());
+    }
+  }
+
+  /*
+    객체가 아니라 이렇게 함수를 반환하는 함수는 액션 생성 함수라 하지 않고 thunk 생성 함수라고 한다.
+    thunk 생성 함수에서는 dispatch와 getState를 파라미터로 가지는 새로운 함수를 만들어서 반환해야 한다.
+    thunk 생성 함수는 내부에서 여러가지 작업이 가능
+    네크워크 요청도 가능
+    또 다른 종류의 액션들을 여러번 디스패치 가능
+  */
+```
+
+### 설치와 적용
