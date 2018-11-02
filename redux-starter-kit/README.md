@@ -145,3 +145,6 @@
 ```
 
 ### 설치와 적용
+```
+  yarn add redux-thunk
+```
