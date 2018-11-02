@@ -40,6 +40,19 @@ class App extends Component {
                                 )
                     )
                 }
+                {/*삼항연산자가 어렵다면 가독성을 위해서
+                (() => {
+                    if(loading) return (<h2>로딩중...</h2>);
+                    if(error) return (<h2>오류 발생!</h2>)
+                    return (
+                        <div>
+                            <h2>{post.title}</h2>
+                            <p>{post.body}</p>
+                        </div>
+                    )
+                })
+                */}
+                
                 <button onClick={CounterActions.increment}>+</button>
                 <button onClick={CounterActions.decrement}>-</button>
                 <button onClick={CounterActions.incrementAsync}>async+</button>
