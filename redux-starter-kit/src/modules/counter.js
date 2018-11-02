@@ -20,4 +20,4 @@ export const decrementAsync = () => dispatch => {
 export default handleActions({
   [INCREMENT]: (state, action) => state + 1,
   [DECREMENT]: (state, action) => state - 1
-}, 0);
+}, 1);
