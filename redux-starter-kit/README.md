@@ -148,3 +148,84 @@
 ```
   yarn add redux-thunk
 ```
+
+### 웹 요청 처리
+```
+  redux-thunk를 이용한 비동기 작업 처리
+  axios라는 promise 기반 HTTP 클라인언트 라이브러리를 사용하여 웹 요청 처리하기
+```
+
+### Promise란?
+```javascript
+  /*
+  Promise는 ES6 문법에서 비동기 처리를 다루는데 사용하는 객체
+  숫자를 1초뒤에 프린하는 코드 예제
+  */
+  function printLater(number) {
+    setTimeout(function() {
+      console.log(number)
+    }, 1000);
+  }
+
+  printLater(1);
+
+  // 숫자를 1 초간격으로 출력하는 예제
+  function printLater(number, fn) {
+    setTimeout(function() {
+      console.log(number);
+      if(fn) fn();
+    }, 1000);
+  }
+
+  printLater(1, function(){
+    printLater(2, function() {
+      printLater(3, function() {
+        printLater(4);
+      });
+    });
+  });
+  // 구조가 복잡해진다. 소위 콜백헬
+
+  // 대안책 Promise 객체 반환 함수 정의
+  function printLater(number) {
+    return new Promise(
+      resolve => {
+        setTimeout(() => {
+          console.log(number);
+          resolve();
+        }, 1000)
+      }
+    )
+  }
+
+  // 사용법
+  printLater(1)
+    .then(() => printLater(2))
+    .then(() => printLater(3))
+    .then(() => printLater(4));
+  
+  /*
+    Promise에서 결과 값을 반환할 때는 resolve(결과 값)을 작성하고, 오류를 발생시킬 때는 reject(오류)를 작성한다.
+    반환하는 결과 값과 오류는 .then || .catch 에 전달하는 함수의 파라미터로 설정된다.
+  */
+  function printLater(number) {
+    return new Promise(
+      (resolve, reject) => {
+        if (number > 4) {
+          return reject('reason: number is greater than 4');
+        }
+        setTimeout(() => {
+          console.log(number);
+          resolve(number + 1);
+        }, 1000);
+      }
+    )
+  }
+
+  printLater(1)
+    .then(num => printLater(num))
+    .then(num => printLater(num))
+    .then(num => printLater(num))
+    .then(num => printLater(num))
+    .catch(e => console.log(e));
+```
