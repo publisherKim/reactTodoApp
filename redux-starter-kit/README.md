@@ -229,3 +229,9 @@
     .then(num => printLater(num))
     .catch(e => console.log(e));
 ```
+### axios 사용
+```
+  yarn add axios
+  axios를 사용하여 REST API를 요청하기
+  jsonplaceholder에서 제공하는 테스트 데이터 활용
+```
