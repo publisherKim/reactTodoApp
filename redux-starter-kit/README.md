@@ -235,3 +235,29 @@
   axios를 사용하여 REST API를 요청하기
   jsonplaceholder에서 제공하는 테스트 데이터 활용
 ```
+
+### redux-thunk와 axios사용
+```
+  post 모듈 만들기
+  API 함수와 액션 및 액션 생성 함수를 정의하기
+```
+
+### getPost thunk 다이어그램
+```
+                PENDING =>
+  웹브라우저                              서버
+
+              <= SUCCESS, FAILURE
+
+  성공시                                 실패시
+  POST_PENDING                          POST_PENDING
+  POST_SUCCESS                          POST_FAILURE
+  
+  src/modules/post.js
+  앞 코드는 요청이 시작할 때 POST_PENDING 액션을 디스패치 함
+  그리고 나서 서버가 응답할때까지 대기 후
+  액션이 디스패치되어 리듀서에서 이를 처리할 떄
+  해당 요청이 대기 중이라는 상태를 설정하도록 구현
+
+  요청 응답에 관한 성공 에러 처리하기
+```
