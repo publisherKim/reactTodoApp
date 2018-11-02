@@ -8,7 +8,11 @@ import * as postActions from './modules/post';
 class App extends Component {
     loadData = () => {
         const { PostActions, number} = this.props;
-        PostActions.getPost(number)
+        PostActions.getPost(number).then( res => {
+            console.log(res);
+        }).catch(err => {
+            console.log(err);
+        }) 
     }
 
     componentDidMount() {
