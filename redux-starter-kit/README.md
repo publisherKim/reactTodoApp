@@ -57,3 +57,57 @@
   }
   // 자동으로 처리 되기때문에 따로 관리해줄 필요가 없다.
 ```
+
+## 비동기 작업을 여러개 관리할 경우
+```javascript
+import { handleActions, createAction } from 'redux-actions';
+import { pender, applyPenders } from 'redux-pender';
+import axios from 'axios';
+
+function getPostAPI(postId) {
+  return axios.get(`https://jsonplaceholder.typicode.com/posts/${postId}`);
+}
+
+// 액션 타입: 시작 성공 실패
+const GET_POST = 'GET_POST';
+
+/* 
+  createAction을 통해 생성 두번째 파라미터는 Promise를 반환하는 함수
+  (type, fn => Promise)
+*/
+export const getPost = createAction(GET_POST, getPostAPI);
+
+const initialState = {
+  data: {
+    title: '',
+    body: ''
+  }
+};
+
+const reducer = handleActions({
+  // 다른 일반 액션들을 관리
+}, initalState);
+
+export default applyPenders(reducer, [
+  {
+    type: GET_POST,
+    onSuccess: (state, action) => {
+      const {title, body} = action.payload.data;
+      return {
+        data: {
+          title,
+          body
+        }
+      }
+    }
+  },
+  /*
+    다른 pender 액션들
+    {type: GET_SOMETHING, onSuccess: (state, action) => ...},
+    {type: GET_SOMETHING, onSuccess: (state, action) => ...}
+  */
+]);
+  /*
+    applyPenders 함수를 사용할 때 첫 번째 파라미터에는 일반 리류서를 넣어주고, 두번째 파라미터에는에는 pendder 관련 객들을 배열 형태로 작성
+  */
+```
