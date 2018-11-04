@@ -1,4 +1,5 @@
-import { handleActions } from 'redux-actions';
+import { handleActions, createAction } from 'redux-actions';
+import { pender } from 'redux-pender';
 import axios from 'axios';
 
 // postId를 파라미터로 전달하여 요청하는 함수
@@ -8,18 +9,14 @@ function getPostAPI(postId) {
 
 // 액션 타입: 시작 성공 실패
 const GET_POST = 'GET_POST';
-const GET_POST_PENDING = 'GET_POST_PENDING';
-const GET_POST_SUCCESS = 'GET_POST_SUCCESS';
-const GET_POST_FAILURE = 'GET_POST_FAILURE';
 
-export const getPost = (postId) => ({
-  type: GET_POST,
-  payload: getPostAPI(postId)
-});
+/* 
+  createAction을 통해 생성 두번째 파라미터는 Promise를 반환하는 함수
+  (type, fn => Promise)
+*/
+export const getPost = createAction(GET_POST, getPostAPI);
 
 const initialState = {
-  pending: false,
-  error: false,
   data: {
     title: '',
     body: ''
@@ -27,30 +24,16 @@ const initialState = {
 };
 
 export default handleActions({
-  [GET_POST_PENDING]: (state, action) => {
-    return {
-      ...state,
-      pending: true,
-      error: false
-    };
-  },
-  [GET_POST_SUCCESS]: (state, action) => {
-    const {title, body} = action.payload.data;
-
-    return {
-      ...state,
-      pending: false,
-      data: {
-        title,
-        body
+  ...pender({
+    type: GET_POST,
+    onSuccess: (state, action) => {
+      const {title, body} = action.payload.data;
+      return {
+        data: {
+          title,
+          body
+        }
       }
-    };
-  },
-  [GET_POST_FAILURE]: (state, action) => {
-    return {
-      ...state,
-      pending: false,
-      error: true
     }
-  }
+  })
 }, initialState);
