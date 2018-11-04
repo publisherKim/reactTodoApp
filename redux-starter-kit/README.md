@@ -10,3 +10,50 @@
 ```
   yarn add redux -pender
 ```
+
+## 리듀서의 상태구조
+```javascript
+  //  basic
+  {
+    pending: {},
+    success: {}
+    failure: {}
+  }
+  // dispatch after 1
+  {
+    pending: {
+      'ACTION_NAME': true
+    },
+    success: {
+      'ACTION_NAME': false
+    },
+    failure: {
+      'ACTION_NAME': false
+    }
+  }
+  // dispatch after 2
+  {
+    pending: {
+      'ACTION_NAME': false
+    },
+    success: {
+      'ACTION_NAME': true
+    },
+    failure: {
+      'ACTION_NAME': false
+    }
+  }
+  // dispatch after 3
+  {
+    pending: {
+      'ACTION_NAME': false
+    },
+    success: {
+      'ACTION_NAME': false
+    },
+    failure: {
+      'ACTION_NAME': true
+    }
+  }
+  // 자동으로 처리 되기때문에 따로 관리해줄 필요가 없다.
+```
