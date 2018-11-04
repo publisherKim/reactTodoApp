@@ -1,5 +1,5 @@
 import { handleActions, createAction } from 'redux-actions';
-import { pender } from 'redux-pender';
+import { applyPenders } from 'redux-pender';
 import axios from 'axios';
 
 // postId를 파라미터로 전달하여 요청하는 함수
@@ -22,9 +22,11 @@ const initialState = {
     body: ''
   }
 };
+const reducer = handleActions({
 
-export default handleActions({
-  ...pender({
+}, initialState)
+export default applyPenders(reducer, [
+  {
     type: GET_POST,
     onSuccess: (state, action) => {
       const {title, body} = action.payload.data;
@@ -34,6 +36,14 @@ export default handleActions({
           body
         }
       }
+    },
+    onCancel: (state, action) => {
+      return {
+        data: {
+          title: '취소됨',
+          body: '취소됨'
+        }
+      }
     }
-  })
-}, initialState);
+  }
+]);

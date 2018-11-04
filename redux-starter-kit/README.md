@@ -111,3 +111,10 @@ export default applyPenders(reducer, [
     applyPenders 함수를 사용할 때 첫 번째 파라미터에는 일반 리류서를 넣어주고, 두번째 파라미터에는에는 pendder 관련 객들을 배열 형태로 작성
   */
 ```
+
+## 요청 취소
+```
+  리덕스 펜더를 사용이 Promise기반 액션 을 아주 쉽게 취소가 가능하다.
+  Promise 기반 액션을 디스패치하고 나면 cancel 함수가 포함된 Promise를 반환함.
+  이 cancel 함수를 호출하면 미들웨어가 해당 요청을 더 이상 처리하지 않음.
+```
