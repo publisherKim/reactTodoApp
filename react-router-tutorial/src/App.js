@@ -9,6 +9,7 @@ const App = () => {
     <div>
       <Route exact path="/" component={Home}></Route>
       <Route path="/about" component={About}></Route>
+      <Route path="/about/:name" component={About}></Route>
     </div>
   );
 }
