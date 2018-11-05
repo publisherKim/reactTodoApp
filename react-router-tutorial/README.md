@@ -1,174 +1,34 @@
-# react-router로 SPA 개발
+# 코드 스플리팅
 ```
-  16.1 SPA란?
-  16.2 프로젝트 구성
-  16.3 Route와 파라미터
-  16.4 라우트 이동
-  16.5 라우트 안의 라우트
-  16.6 라우트로 사용된 컴포넌트가 전달받는 props
-  16.7 withRouter로 기타 컴포넌트에서 라우터 접근
-  16.8 정리
+  17.1 코드 스플리팅
+  17.2 비동기적 코드 불러오기: 청크 생성
+  17.3 라우트에 코드 스플리팅
+  17.4 정리
 ```
 
-## SPA란?
+## 싱글페이지 어플리케이션의 단점
 ```
-  SPA는 Single Page Application
-  -SSR-
-          pageA           <->
-    서버  pageB           <->                    컴퓨터
-          pageC           <->
-          통신 비용이 발생(data 뿐만 아니라 전체 페이지 관련된 자원들 다 주고 받아야 함)
-    기존 페이지 라우터로 변경 될때마다 통신을 요청함
-    웹에서 제공하는 정보가 많아 질수록 속도 문제 발생 이를 개선하기 위해 캐싱과 압축을 해서 서비스를 제공 
-    이 방식은 사용자와 인터렉션이 많아 질수록 충분하지 않음
-    서버에서 렌더링을 담당하는 것은 그만큼 서버 자원을 렌더링 한다는데 사용한다는 의미
-  -SPA-
-          pageA           <->
-    서버  pageB           <->                    컴퓨터
-          pageC           <->
-          통신 비용이 발생(꼭 필요한 데이터만 주고 받을수 있음)
-    애플리케이션을 우선 웹브라우저에 로드 시킨 후 필요한 데이터만 전달 받아 보여줌
-    서버의 리소스 자원 절약(기존의 markup css 이런 자원들을 계속 전달해 주는 양을 꼭 필요한 데이터만 보내줌으로써 리소스 절약이 됨)
-    초기 로딩이 길지만 한번 로드하고 나면 웹 브라우저에서 나머지 페이질을 정의함
-    주소에따라 다른 뷰를 보여 주는 것을 라우팅이라고 함
-    리액트 자체에 이 기능이 내장되어 있지는 않지만 라우팅 관련 라이브러리인 react-router를 설치하여 구현 가능
+  페이지 로딩 속도가 지연될 수 있음
+  로딩 속도가 지연되는 이유는 자바스크립트 번들 파일에 모든 애플리케이션의 로직을 불러오므로 규모가 커지면서 용량도 커지기 때문
 
-    리액트 라우터는 서드 파티 라이브러리(제작사에서 만든게 아닌 제3자에서 제공하는 것을 써드파티라고 함)로 비록 공식 라이브러리는 아니지만 자주 쓰인다.
+  코드 스플링을 통해 해결
+    : 코드를 분활 한다는 의미
+    webpack에서 프로젝트를 번들링 할 때 파일 하나가 아니라 파일 여러 개로 분리시켜서 결과물을 만듬
+    또 페이지를 로딩할 때 한꺼번에 불러오는 것이 아니라 필요한 시점에 로드 간능
 
-    리엑트 라우터를 사용하면 페이지 주소를 변경했을때 주소에따라 다른 컴포넌트를 렌더링해 주고 주소정보(파라미터, URL쿼리 등)을 컴포넌트의 props로 전달해서 
-    컴포넌트 단에서 주소 상태에 따라 다른 작업을 하도록 설정이 가능하다.
-
-    초기 로딩이 크긴 하지만 이에 대한 대응 방법으로 코드 스플리팅을 통해 라우트별로 파일을 나누어 트래픽과 로딩 속도를 개선이 가능하다.
+  1. 라이브러리 분리하기
+  2. 비동기 렌더링하기
+  3. 빌드 후 확인하기
 ```
 
-## 프로젝트 구성
+## 코드 스플링팅의 기본
 ```
-  1. 프로젝트 준비하기
-  2. 리액트 라우터 적용하기
-  3. 라우트 생성 및 파라미터 사용하기
-  4. 라우트 이동하기
-  5. 라우터 관련 객체 알아보기
-  
-  create-react-app react-router-tutorial
-  yarn add react-router-dom
-  
-  프로젝트 초기화 및 구조 설정
-  1. src/App.css
-  2. src/App.test.js
-  3. src/logo.svg
-
-  make it directory
-  1. src/components: 컴포넌트들이 위치하는 디렉토리
-  2. src/pages: 각 라우트들이 위치하는 디렉토리
-```
-## NODE_PATH 설정
-```javascript
-  /*
-    컴포넌트나 모듈을 import할 때 보통 상대 경로로 불러온다
-    ex) ../components/A.js ../../../../components/B.js
-    구조가 깊어질수록 복잡하고 헷갈림
-    프로젝트의 루트 경로를 지정하거나 alias를 통해 인지의 용이성을 높임
-  */
-  // page.json mac
-    "start": "NODE_PATH=src react-scripts start",
-    "build": "NODE_PATH=src react-scripts build",
-  // window
-  // yarn add cross-env
-    "start": "cross-env NODE_PATH=src react-scripts start",
-    "build": "cross-env NODE_PATH=src react-scripts build",
-```
-## 라우트 파라미터와 쿼리 읽기
-```
-  라우트의 경로에 특정 값을 넣는 방법
-    1. params: /about/something
-    2. Qyery String: /about/something?key=value&anotherKey=value
-
-  Query String 값의 경우 문자열이라는데 주의
-    : 쿼리 스트링 값을 사용하여 값을 비교애햐 할때는 Boolean 형태의 값을 불어오든 숫자 형태를 불러오든 간에 타입에 유의
-```
-
-## 라우트 이동
-```
-  Link 컴포넌트
-    : 애플리케이션 안에서 다른 라우트로 이동할 때는, 다른 페이지로 이동하는 링크를 작성할 때 사용하는 a 태그가 아닌 Link 컴포넌트를 사용해야 한다.
-  NavLink 컴포넌트 
-    : NavLink 컴포넌트는 Link 컴포넌트와 비슷하지만, 추가기능이 있다. 현재 주소와 해당 컴포넌트의 목적지 주소가 일치한다면 특정 스타일 클래스를 지정 가능
-    특정 스타일 또는 클래스 지정가능: activeStyle 속성이 존재함
-```
-## 라우트 안의 라우트
-```
-  중첩 라우트를 실습
-```
-
-## 라우트로 사용된 컴포넌트가 전달받는 props
-```
-  라우트 정보를 조회할 때 또는 자바스크립트를 사용하여 라우팅을 할 때
-  location, match, history 값들을 props로 받아와서 사용했는데 이 object들에 대해서 알아본다.
-```
-
-### location
-```javascript
-  /*
-    location은 현재 페이지의 주소 상태를 알려준다.
-    Post 페이지 컴포넌트에서 lcoation 조회 결과
-  */
-  {
-    "pathname": "/posts/3",
-    "search"L "",
-    "hash": "",
-    "key": "xmsczi"
-  }
-  // 주로 search props에서 URLQuery를 읽는데 사용 혹은 address change watch use
-  componentDidUpdate(prevProps, pervState) {
-    if(prevProps.location !== this.props.location) {
-      // change address
-    }
-  }
-```
-
-## match
-```
-  match는 <Route> 컴포넌트에서 설정한 path와 관련된 데이터를 조회할 때 사용
-  현재 URL이 같더라도 다른 라우트에서 사용된 match는 다른 정보를 알려줌
-  Post라우트와 Posts 라우트에 match 값을 확인
-
-  다른 라우트에서 기록한 match 객체는 다른 정보를 보여준다.
-  match 객체는 주로 params를 조회 || 서브 라우트를 만들 때 현재 path를 참조하는 데 사용
-```
-
-## history
-```
-  history는 현재 라우터를 조작할 때 사용
-  ex: 뒤쪽 페이지로 넘어가거나, 다시 앞쪽 페이지로 가거나, 새로운 주소로 이동해야 할 때 이 객체가 가진 함수를 호출
-
-  replace('/posts') 
-  push와의 차이는 페이지 기록이 있고 없의 차이이다.
-  action은 현재 history 상태를 알려 줌
-  POP: 페이지 처음 방문 시
-  PUSH: link || push 를 통한 라우팅일 때
-  REPLACE: repalce를 통한 라우팅
-  block(): 시스템 경고창
-  goBack(): 뒤로 가기
-  goForward(): 앞으로 가기
-  go(): 특정 위치로 이동하기
-  go(1)
-  go(-1)
-```
-
-## withRouter로 기타 컴포넌트에서 라우터 접근
-```
-  앞에서 배운 3 가지 props는 라우트로 사용된 컴포넌트에서만 접근 가능
-  즉 라우트 내부 또는 외부에서는 history, loaction, match 접근 불가
-  예를 들어 Menu 컴포넌트는 라우트 외부에 있기 때문에 위 3가지 속성에 접근 불가
-
-  해결책: withRouter를 사용하여 props에 접근 가능
-  사용법: 컴포넌트를 내보낼때 withRouter 함수로 감싸 주면 Menu 컴포넌트에서도 history등 객체 사용 가능
-```
-
-## 정리
-```
-  페이지를 보여주는 방식
-  큰 프로젝트의 경우 컴포넌트 자체가 양이 많아져서 최종 결과물인 자바스크립트 파일 크기가 매우 커진다.
-
-  이에대한 해결책으로 때에따라 필요한 컴포넌트만 로드하기위애 코드 스플리팅을 사용하면 최적화에 도움이 된다.
+  1. webpack 설정 밖으로 꺼내기
+    yarn eject
+  2. vender 설정
+    코드 스플리팅을 진행하려면 우선 vendor를 설정해야함
+    모든 페이지 사용: react, react-dom, redux, react-redux, styled-components
+    주로 서드파티 라이브러리들의 경우 vendor로 분리해냄 (특정 컴포넌트에서 사용될 경우)
+    컴포넌트에 필요한 라이브러리 들만 업데이트 
+    이경우 더욱 오랫동안 캐싱 효과를 누릴수 있으므로 트래픽 절감 및 속도 개선 가능
 ```
