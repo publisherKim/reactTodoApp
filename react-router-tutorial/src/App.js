@@ -1,9 +1,14 @@
 import React from 'react';
-
+import { Route } from 'react-router-dom';
+import {
+  Home,
+  About
+} from 'pages';
 const App = () => {
   return (
     <div>
-      리액트 라우터를 배워봅시다.
+      <Route exact path="/" component={Home}></Route>
+      <Route path="/about" component={About}></Route>
     </div>
   );
 }
