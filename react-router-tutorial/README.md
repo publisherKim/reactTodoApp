@@ -77,3 +77,9 @@
     "start": "cross-env NODE_PATH=src react-scripts start",
     "build": "cross-env NODE_PATH=src react-scripts build",
 ```
+## 라우트 파라미터와 쿼리 읽기
+```
+  라우트의 경로에 특정 값을 넣는 방법
+    1. params
+    2. Qyery String
+```
