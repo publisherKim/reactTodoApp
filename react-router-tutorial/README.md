@@ -80,6 +80,6 @@
 ## 라우트 파라미터와 쿼리 읽기
 ```
   라우트의 경로에 특정 값을 넣는 방법
-    1. params
-    2. Qyery String
+    1. params: /about/something
+    2. Qyery String: /about/something?key=value&anotherKey=value
 ```
