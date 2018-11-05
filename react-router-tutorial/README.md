@@ -99,3 +99,76 @@
 ```
   중첩 라우트를 실습
 ```
+
+## 라우트로 사용된 컴포넌트가 전달받는 props
+```
+  라우트 정보를 조회할 때 또는 자바스크립트를 사용하여 라우팅을 할 때
+  location, match, history 값들을 props로 받아와서 사용했는데 이 object들에 대해서 알아본다.
+```
+
+### location
+```javascript
+  /*
+    location은 현재 페이지의 주소 상태를 알려준다.
+    Post 페이지 컴포넌트에서 lcoation 조회 결과
+  */
+  {
+    "pathname": "/posts/3",
+    "search"L "",
+    "hash": "",
+    "key": "xmsczi"
+  }
+  // 주로 search props에서 URLQuery를 읽는데 사용 혹은 address change watch use
+  componentDidUpdate(prevProps, pervState) {
+    if(prevProps.location !== this.props.location) {
+      // change address
+    }
+  }
+```
+
+## match
+```
+  match는 <Route> 컴포넌트에서 설정한 path와 관련된 데이터를 조회할 때 사용
+  현재 URL이 같더라도 다른 라우트에서 사용된 match는 다른 정보를 알려줌
+  Post라우트와 Posts 라우트에 match 값을 확인
+
+  다른 라우트에서 기록한 match 객체는 다른 정보를 보여준다.
+  match 객체는 주로 params를 조회 || 서브 라우트를 만들 때 현재 path를 참조하는 데 사용
+```
+
+## history
+```
+  history는 현재 라우터를 조작할 때 사용
+  ex: 뒤쪽 페이지로 넘어가거나, 다시 앞쪽 페이지로 가거나, 새로운 주소로 이동해야 할 때 이 객체가 가진 함수를 호출
+
+  replace('/posts') 
+  push와의 차이는 페이지 기록이 있고 없의 차이이다.
+  action은 현재 history 상태를 알려 줌
+  POP: 페이지 처음 방문 시
+  PUSH: link || push 를 통한 라우팅일 때
+  REPLACE: repalce를 통한 라우팅
+  block(): 시스템 경고창
+  goBack(): 뒤로 가기
+  goForward(): 앞으로 가기
+  go(): 특정 위치로 이동하기
+  go(1)
+  go(-1)
+```
+
+## withRouter로 기타 컴포넌트에서 라우터 접근
+```
+  앞에서 배운 3 가지 props는 라우트로 사용된 컴포넌트에서만 접근 가능
+  즉 라우트 내부 또는 외부에서는 history, loaction, match 접근 불가
+  예를 들어 Menu 컴포넌트는 라우트 외부에 있기 때문에 위 3가지 속성에 접근 불가
+
+  해결책: withRouter를 사용하여 props에 접근 가능
+  사용법: 컴포넌트를 내보낼때 withRouter 함수로 감싸 주면 Menu 컴포넌트에서도 history등 객체 사용 가능
+```
+
+## 정리
+```
+  페이지를 보여주는 방식
+  큰 프로젝트의 경우 컴포넌트 자체가 양이 많아져서 최종 결과물인 자바스크립트 파일 크기가 매우 커진다.
+
+  이에대한 해결책으로 때에따라 필요한 컴포넌트만 로드하기위애 코드 스플리팅을 사용하면 최적화에 도움이 된다.
+```
