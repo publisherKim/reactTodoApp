@@ -82,4 +82,7 @@
   라우트의 경로에 특정 값을 넣는 방법
     1. params: /about/something
     2. Qyery String: /about/something?key=value&anotherKey=value
+
+  Query String 값의 경우 문자열이라는데 주의
+    : 쿼리 스트링 값을 사용하여 값을 비교애햐 할때는 Boolean 형태의 값을 불어오든 숫자 형태를 불러오든 간에 타입에 유의
 ```
