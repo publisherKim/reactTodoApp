@@ -4,13 +4,14 @@ import {
   Home,
   About
 } from 'pages';
+import Menu from 'components/Menu';
 
 const App = () => {
   return (
     <div>
+      <Menu></Menu>
       <Route exact path="/" component={Home}></Route>
-      <Route exact path="/about" component={About}></Route>
-      <Route path="/about/:name" component={About}></Route>
+      <Route path="/about/:name?" component={About}></Route>
     </div>
   );
 }
