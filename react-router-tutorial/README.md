@@ -61,3 +61,19 @@
   1. src/components: 컴포넌트들이 위치하는 디렉토리
   2. src/pages: 각 라우트들이 위치하는 디렉토리
 ```
+## NODE_PATH 설정
+```javascript
+  /*
+    컴포넌트나 모듈을 import할 때 보통 상대 경로로 불러온다
+    ex) ../components/A.js ../../../../components/B.js
+    구조가 깊어질수록 복잡하고 헷갈림
+    프로젝트의 루트 경로를 지정하거나 alias를 통해 인지의 용이성을 높임
+  */
+  // page.json mac
+    "start": "NODE_PATH=src react-scripts start",
+    "build": "NODE_PATH=src react-scripts build",
+  // window
+  // yarn add cross-env
+    "start": "cross-env NODE_PATH=src react-scripts start",
+    "build": "cross-env NODE_PATH=src react-scripts build",
+```
