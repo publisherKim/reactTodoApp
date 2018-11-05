@@ -88,3 +88,62 @@
       new InterpolateHtmlPlugin(env.raw),
     ],
 ```
+
+## 비동기적 코드 불러오기: 청크 생성
+```javascript
+  /*
+    앞에서 진행한 vendor 처리는 단순히 원활하게 캐싱을 할 수 있게 하는 작업일 뿐,
+    페이지를 로딩할 대 모든 코드를 불러오는 것은 동일함.
+    페이지에 필요한 코드를 불러오려면, 청크를 생성해야함
+    청크를 생성하면 페이지를 로딩할 때 필요한 파일만 불러올 수 있고,
+    아직 불러오지 않은 청크 파일들은 나중에 필요할 때 비동기적으로 불러와 사용 가능
+  */
+  // 청크 생성
+  import React from 'react';
+
+  const SplitMe = () => {
+    return (
+      <h3>
+        청크
+      </h3>
+    )
+  };
+
+  export default SplitMe;
+
+  /*
+    청크를 생성할 컴포넌트 자체는 특별히 하는것이 없다.
+    다만 컴포넌트를 import 하는 방식이 다름
+  */
+  // 청크 컴포넌트 로드 
+  import React, { Component } from 'react';
+
+  class AsyncSplitMe extends Component {
+    state = {
+      SplitMe: null
+    }
+
+    loadSplitMe = () => {
+      // 비동기적으로 코드를 불러옴. 함수는 Promise를 결과로 반환함
+      // import()는 모듈의 네임 스페이스를 불러오므로, default를 직접 지겅해야함
+      import('./SplitMe').then(({ default: SplitMe }) => {
+        this.setState({
+          SplitMe
+        });
+      });
+    }
+
+    render() {
+      const { SplitMe } = this.state;
+      // SplitMe가 있으면 이를 렌더링하고, 없으면 버튼을 렌더링 함
+      // 버튼을 누르면 SplitMe를 불러옴
+      return SplitMe ? <SplitMe/> : <button onClick={this.loadSplitMe}>SplitMe 로딩</button> 
+    }
+  }
+
+  /*
+    SplitMe 로딩 버튼을 누르면 우리가 준비한 SplitMe 컴포넌트가 나타나고, 네트워크에는 2, chunk.js 파일을 불러온 기록이 남음.
+  */
+
+  export default AsyncSplitMe;
+```
