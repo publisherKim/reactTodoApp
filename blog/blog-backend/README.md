@@ -47,3 +47,52 @@
   크롬이 만든 V8 엔진이다.
   서버에서도 자바스크립트를 사용할 수 있는 런타임 엔진
 ```
+
+### Koa
+```
+  Node.js 환경에서 웹 서버를 구축할 때는 보통 Express, Hapi, Koa 등 웹 프레임워크를 사용
+  현재 엡프로임워크중 hot: Express 소유권이 IBM -> StrongLoop로 이전 인지도 하향세
+  Koa 프레임워크는 Express falk refactoring 결과물
+  기존 Express에서 아키텍처에서 버전이 많이 바뀌어서 버전을 높이지 않고 새 이름을 붙임
+
+  Koa 특징(Express와 비교)
+    - Koa는 훨씬 가볍고
+    - Node v7.6부터 정식으로 지원하는  async/await 문법 사용 가능
+    - 콜백 지옥 겪을일 없고, 비동기 작업도 편하게 관리 가능
+  
+  Node.js 기초 실습 흐름
+    - 작업 환경 준비 및 프로젝트 만들기
+    - Koa로 하는 Hello World
+    - 미들웨어 알아보기
+    - koa-router로 하는 백엔드 라우팅
+    - 라우트 모듈화 하기
+```
+
+## 프로젝트 생성
+
+### 작업 환경 준비
+```
+  Koa는 v7 이상부터 사용하는 것을 권장
+  v7 이상부터는 async/await를 바벨을 이용하여 트렌스파일링 하지 않고 바로 실행 가능
+```
+
+### 프로젝트 생성
+```
+  블로그 서비스와 연동할 서버 만들기
+    : mkdir blog
+      cd blog
+      mkdir blog-backend
+      blog-backend
+      yarn init
+      cat package.json
+      yarn add koa
+```
+
+### ESLint config
+```
+  자바스크립트 문법과 코드스타일 검토 도구인 ESLint 설치 및 적용하기
+  yarn global eslint
+  eslint -v
+  yarn add eslint
+  eslint --init
+```
