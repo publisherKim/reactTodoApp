@@ -4,7 +4,7 @@ import {
   Home,
   About,
   Posts
-} from 'pages';
+} from 'pages/index.async.js';
 import Menu from 'components/Menu';
 // import AsyncSplitMe from 'components/AsyncSplitMe';
 

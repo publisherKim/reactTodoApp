@@ -148,11 +148,39 @@
   export default AsyncSplitMe;
 ```
 ## 라우트에 코드 스플리팅
-```
+```javascript
+/*
   asyncComponent 함수 생성
     : 비동기적으로 불러올 코드가 많으면 청크를 생성할 때마다 파일에 비슷한 코드들을 반복하여 작성해야 함
       조금 더 편하게 구현할 수 있도록 이를 따로 함수화하여 재사용 함
 
+*/
+  import React from 'react';
+
+  export default function asyncComponent(getComponent) {  // asynComponent 정의 인자로 getComponent 전달
+    return class AsyncComponent extends React.Component { // React.Component AsyncComponent 활용
+      static Component = null;                            // static 초기값 설정
+      state = { Component: AsyncComponent.Component };    // state 초기값 할당
+
+      constructor(props) {                                // 생성자에서 비동기적으로 생성 및 state에 할당
+        super(props);
+        if (AsyncComponent.Component) return;
+        getComponent().then(({default: Component}) => {
+          AsyncComponent.Component = Component;
+          this.setState({ Component });
+        });
+      }
+
+      render() {
+        const { Component } = this.state
+        if (Component) {
+          return <Component {...this.props} />
+        }
+        return null
+      }
+    }
+  }
+/*
   이함 수는 컴포넌트를 import하는 함수를 호출하는 함수를 파라미터로 받습니다.
   사용예시: asyncCompoonent(() => import('./Home'));
 
@@ -165,4 +193,13 @@
 
   정리
     : 즉 최초에는 처음 렌더링할때 생성해서 상태로 할당하고,  static으로 설정되어 이후에는 재사용됨
+*/
+
+## 라우트 코드 스플리티용 인덱스 생성
 ```
+  pages/index.async.js 파일 생성
+  index.js와 index.async.js 파일을 분리하는 이유
+    : 나중에 개발 서버에서 비동기 라우트를 비활성화할 것
+      개발 서버에서 청크를 생성하여 코드 스플리팅을 하면 코드 내용을 변경했을 때 자동으로 새로고침이 안됨
+      라우트 코드 스플링은 시레로 나중에 사용자에게 전달할 프로덕션 빌드에만 적용 가능(개발 편의성 목적이 크다.)
+``` 
