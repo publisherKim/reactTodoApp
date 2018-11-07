@@ -102,3 +102,24 @@
   ESLint 규칙이 너무 엄격해서 
   몇가지를 좀 느슨하게 만들기
 ```
+
+## Koa 기본 사용법
+
+### hello world 띄우기
+```javascript
+  // koa framework load
+  const Koa = require('koa');
+
+  // instance make it
+  const app = new Koa();
+
+  // ctx.body 에 문자열 할당
+  app.use((ctx) => {
+    ctx.body = 'hello world';
+  });
+
+  // port config
+  app.listen(4000, () => {
+    console.log('listening to port 4000');
+  });
+```
