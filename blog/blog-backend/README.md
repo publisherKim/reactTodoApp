@@ -96,3 +96,9 @@
   yarn add eslint
   eslint --init
 ```
+
+### ESLint customizing
+```
+  ESLint 규칙이 너무 엄격해서 
+  몇가지를 좀 느슨하게 만들기
+```

@@ -11,21 +11,9 @@ module.exports = {
         "sourceType": "module"
     },
     "rules": {
-        "indent": [
-            "error",
-            4
-        ],
-        "linebreak-style": [
-            "error",
-            "windows"
-        ],
-        "quotes": [
-            "error",
-            "double"
-        ],
-        "semi": [
-            "error",
-            "always"
-        ]
+        "no-unused-vars": 1,
+        "comma-dangle": 0,
+        "eol-last": 0,
+        "no-console": 0
     }
 };
