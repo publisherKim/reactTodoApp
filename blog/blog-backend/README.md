@@ -310,3 +310,42 @@
   GET/posts/:id/comments                    특정 포스트의 덧글 목록 조회
   DELETE/posts/:id/comments/:commentId      특정 포스트의 특정 덧글 삭제
 ```
+
+### 라우트 모듈화
+```javascript
+  /*
+  프로젝트를 진행하다 보면 여러 종류의 라우트를 만듬
+  하지만 각 라우트를 index.js 파일 하나에 모두 작성하면 코드가 너무 길고, 유지보수도 어려움
+  라우터를 여러 파일에 분리시켜서 작성하고, 이를 불러와 적용하는 방법
+  */
+  // src/api/index.js
+  const Router = require('koa-router');
+
+  const api = new Router();
+
+  api.get('/test', (ctx) => {
+    ctx.body = 'test 성공';
+  });
+
+  // 라우터 내보내기
+  module.exports = api;
+
+  // src/index.js
+  const Koa = require('koa');
+  const Router = require('koa-router');
+
+  const api = require('./api');
+
+  const app = new Koa();
+  const router = new Router();
+
+  // 라우터 설정
+  router.use('/api', api.router()); // api 라우트 적용
+
+  // app 인스턴스에 라우턱 적용
+  app.use(router.routes()).use(router.allowedMethods());
+
+  app.listen(4000, () => {
+    console.log('listening to port 4000');
+  });
+```
