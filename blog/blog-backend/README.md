@@ -271,3 +271,42 @@
 
   // http://localhost:4000/about/react, http://localhost:4000/posts, http://loacalhost:4000/posts/?id=10
 ```
+
+### REST API
+```
+  웹 애플리케이션을 만들려면 데이터베이스에 정보를 Input and Read
+  웹 브라우저에서 데이터베이스에 직접 접속해서 데이터를 변경하면 보안상 문제가 생김
+  그런 이유로 REST API를 만들어서 사용함.
+      ->                      --
+  DB        SERVER(REST API)      클라이언트
+      --                      -->
+      처리                    응답
+  
+  클라이언트가 서버에 자신의 데이터를 조회, 생성, 삭제, 업데이트하겠다고 요청하면, 
+  서버는 필요한 로직에 따라 데이터베이스에 접근하여 작업을 처리.
+
+  REST API는 요청 종류에 따라 다른 HTTP 메서드를 사용
+  HTTP 메서드의 종류는 여러가지로, 주로 사용하는 메서드는 다음과 같다.
+
+  메서드      설명
+  GET         데이터를 조회할 때 사용
+  POST        데이터를 등록할 때 사용. 인증 작업을 거칠 때 사용하기도 함
+  DELETE      데이터를 지울 때 사용
+  PUT         데이터를 새 정보로 통째로 교체할 때 사용
+  PATCH       데이터의 특정 필드를 수정할 때 사용
+
+  이 메서드의 종류에 따라 get, post, delete, put, patch를 사용하여 라우터에서 각 메서드의 요청을 처리
+  router.get get이 바로 HTTP 메서드 GET입니다. POST 요청을 받고 싶다면 router.post(...)를 하면 됨
+
+  REST API를 설계할 때는 API 주소와 메서드에 따라 어떤 역활을 하는지 쉽게 파악할 수 있게 작성 해야 함
+
+  블로그 포스트용 REST API 예시
+  POST/posts                                포스트 작성
+  GET/posts                                 포스트 목록 조회
+  GET/posts/:id                             특정 포스트 조회
+  DELETE/posts/:id                          특정 포스트 삭제
+  PATCH/posts/:id                           특정 포스트 업데이트(구현 방식에 따라 PUT으로 사용 가능)
+  POST/posts/:id/comments                   특정 포스트에 덧글 등록
+  GET/posts/:id/comments                    특정 포스트의 덧글 목록 조회
+  DELETE/posts/:id/comments/:commentId      특정 포스트의 특정 덧글 삭제
+```
