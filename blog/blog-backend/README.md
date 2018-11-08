@@ -156,3 +156,34 @@
 
   app.listen( 4000, _ => console.log('listening to port 4000'));
 ```
+
+### next()는 프로미스다.
+```javascript
+  /*
+  next를 실행하면 프로미스를 반환
+  따라서 다음 작업들이 끝나고 난 후 특정 작업을 수행 가능
+  */
+  app.use((ctx, next) => {
+    console.log(1);
+    next().then(() => {
+      console.log('bye');
+    })
+  });
+  // console result: excute order thinking
+  1
+  2
+  bye
+```
+### async/await 사용
+```javascript
+  /*
+  Koa에서는 async/await를 정식으로 지원하기 때문에 편하게 사용가능(express의경우 편법을 동원해서 사용해야함)
+  async/await는 서버에서 매우 유용하게 사용가능
+  특히 데이터베이스에 요청할 때 콜백을 사용 할 필요가 없어서 깔끔하게 작성 가능
+  */
+  app.use(async (ctx, next) => {
+    console.log(1);
+    await next();
+    console.log('bye');
+  });
+```

@@ -2,10 +2,11 @@
 
   const app = new Koa();
 
-  app.use( (ctx, next) => {
+  app.use(async (ctx, next) => {
     console.log(1);
     ctx.body = 'melong';
-    next();
+    await next();
+    console.log('bye');
   });
 
   app.use( (ctx, next) => {
