@@ -123,3 +123,36 @@
     console.log('listening to port 4000');
   });
 ```
+
+### 미들웨어
+```javascript
+  /*
+  Koa 애플리케이션은 미들웨어의 배열로 구성
+  use 함수를 이용해 등록
+  */
+  app.use(ctx => ctx.body = 'hello wrold');
+  /*
+    app.use 파라미터로 함수가 하나의 미들웨어 이다.
+    Koa의 미들웨어 함수에서는 두가지 파라미터를 받을수 있다.
+    첫번째는 ctx, 두번째는 next이다.
+    ctx는 웹 요청과 응답 정보를 가짐
+    next는 현재 처리중인 미들웨어의 다음 미들웨어를 호출하는 함수
+    미들웨어를 등록하고 next를 실행하지 않으면 그 다음 미들웨어를 처리하지 않는다.
+    미들웨어는 app.use로 등록하는 순서대로 처리함
+  */
+  const Koa = require('koa');
+
+  const app = new Koa();
+
+  app.use( _ => {
+    console.log(1);
+  });
+
+  app.use( _ => {
+    console.log(2);
+  });
+
+  app.use( ctx => ctx.body = 'hello world');
+
+  app.listen( 4000, _ => console.log('listening to port 4000'));
+```
