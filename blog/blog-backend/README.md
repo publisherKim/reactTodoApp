@@ -394,3 +394,230 @@
 
   // posts 라우트를 불러와 설정
 ```
+
+### 컨트롤러 파일 작성
+```javascript
+  /*
+  라우트를 작성할 때, 라우트를 설정하는 부분 중 파라미터 쪽에 화살표 함수 문법을 사용하여 라우트 처리 함수를 바로 선언 가능
+  posts.get('/', (ctx) => {...});
+
+  하지만 각 라우트 처리 함수의 코드 길이가 같다면 라우터 설정을 하눈에 보기가 어렵다.
+  가독성을 위해 라우트 처리 함수들을 따로 다른 파일로 분리해서 관리가 가능
+  이 라우읕 처리 함수만 모아 놓은 파일이 컨트롤러
+  컨트롤러에서는 백엔드 기능을 구현
+
+  koa-bodyparser 미들웨어를 적용해야 함
+  이 미들웨어는 POST/PUT/PATCH 같은 메서드의 Requet Body JSON 형식으로 데이터를 넣어주면,
+  이를 파싱하여 서버에서 사용 가능
+  yarn add koa-bodyparser
+  */
+  const Koa = require('koa');
+  const Router = require('koa-router');
+  const bodyParser = require('koa-bodyparser');
+
+  const api = require('./api');
+  const app = new Koa();
+  const router = new Router();
+
+  // 라우터 설정
+  router.use('/api', api.routes());
+
+  // 라우터 적용 전에 bodyParser 적용
+  app.use(bodyParser());
+
+  // app 인스턴스에 라우터 적용
+  app.use(router.routes()).use(router.allowedMethods());
+
+  app.listen(4000, () => console.log('listening to port 4000'));
+
+  // 컨트롤러를 만든다.
+  let postId = 1;
+
+  const posts = [
+    {
+      id: 1,
+      title: '제목',
+      body: '내용'
+    }
+  ];
+
+  /*
+    포스트 작성
+    POST /api/posts
+    { title, body }
+  */
+  exports.write = (ctx) => {
+    // REST API의 request body는 ctx.request.body에서 조회할 수 있다.
+    const {
+      title,
+      body
+    } = ctx.request.body;
+
+    postId += 1; // 기존 postId 값에 1을 더합니다.
+
+    const post = { id: postId, title, body };
+    posts.push(post);
+    ctx.body = post;
+  }
+
+  /*
+    포스트 목록 조회
+    GET /api/posts
+  */
+  exports.list = (ctx) => {
+    ctx.body = posts;
+  };
+
+  /*
+    특정 포스트 조회
+      GET /api/posts/:id
+  */
+  exports.read = (ctx) => {
+    const { id } = ctx.params;
+
+    // 주어진 id 값으로 포스트를 찾음
+    // 파라미터로 받아 온 값은 문자열 형식이니 파라미터를 숫자로 변환하거나,
+    // p.id 값을 문자열로 변경해야 함
+    const post = posts.find( p => p.id.toString() === id);
+
+    // 포스트가 없으면 오류를 반환
+    if (!post) {
+      ctx.status = 404;
+      ctx.body = {
+        message: '포스트가 존재하지 않습니다.'
+      };
+      return;
+    }
+
+    ctx.body = post;
+  };
+
+  /*
+    특정 포스트 제거
+    DELETE /api/posts/:id
+  */
+  exports.remove = (ctx) => {
+    const { id } = ctx.params;
+
+    // 해당 id를 가진 post가 몇 번째인지 확인
+    const index = posts.findIndex(p => p.id.toString() === id);
+
+    // 포스트가 없으면 오류를 반환
+    if (index === -1) {
+      ctx.status = 404;
+      ctx.body = {
+        message: '포스트가 존재하지 않습니다.'
+      };
+      return;
+
+      // index번째 아이템을 제거
+      posts.splice(index, 1);
+      ctx.status = 204; // No Content
+    };
+
+    /*
+      포스트 수정(교체)
+        PUT /api/posts/:id
+        { title, body }
+    */
+    exports.replace = (ctx) => {
+      // PUT 메서드는 전체 포스트 정보를 입력하여 데이터를 통째로 교체할 때 사용
+      const { id } = ctx.params;
+
+      // 해당 id를 가진 post가 몇 번쨰인지 확인 가능
+      const index = posts.findIndex(p => p.id.toString() === id);
+
+      // 포스트가 없으면 오류를 반환
+      if (index === -1) {
+        ctx.status = 404;
+        ctx.body = {
+          message: '포스트가 존재하지 않습니다.'
+        };
+        return;
+      }
+
+      // 전체 객체를 덮어 씌운다.
+      // 따라서 id를 제외한 기존 정보를 날리고, 객체를 새로 만듬
+      posts[index] = {
+        id,
+        ...ctx.request.body
+      };
+      ctx.body = posts[index];
+    };
+
+    /*
+      포스트 수정(특정 필드 변경)
+        PATCH /api/posts/:id
+        { title, body }
+    */
+
+    exports.update = (ctx) => {
+      // PATCH 메서드는 주어진 필드만 교체
+      const { id } = ctx.params;
+
+      // 해당 id를 가진 post가 몇 번째인지 확인 가능
+      const index = posts.findIndex( p => p.id.toString() === id);
+
+      // 포스트가 없으면 오류를 반환
+      if (index === -1) {
+        ctx.status = 404;
+        ctx.body = {
+          message: '포스트가 존재하지 않습니다.'
+        };
+        return;
+      }
+
+      // 기존 값에 정보를 덮어 씌움
+      posts[index] = {
+        ...posts[index],
+        ...ctx.request.body
+      };
+      ctx.body = posts[index];
+    };
+  };
+
+  // 내보낸 함수는 다음과 같이 로드하고 사용 가능
+  const moduleName = require('fileName');
+  moduleName.fileName();
+
+  // 즉, 방금 만든 posts.ctrl 파일을 불러오면 다음 객체가 로드됨
+  {
+    write: [Function],
+    list: [Function],
+    read: [Function],
+    remove: [Function],
+    replace: [Function],
+    update: [Function]
+  }
+  // 이제 컨트롤러 함수들을 각 라우트에 연결하기
+
+  // src/api/posts/index.js
+  const Router = require('koa-router');
+  const postsCtrl = require('./posts.ctrl');
+
+  const posts = new Router();
+
+  posts.get('/', postsCtrl.list);
+  posts.post('/', postsCtrl.write);
+  posts.get('/:id', postsCtrl.read);
+  posts.delete('/:id', postsCtrl.remove);
+  posts.put('/:id', postsCtrl.replace);
+  posts.patch('/:id', postsCtrl.update);
+
+  module.exports = posts;
+
+  /*
+    posts 라우터를 완성
+
+    list, read, remove를 제외한 API들은 요청할 때 Request Body가 필요
+    Postman에서 이 값을 어떻게 넣는지 확인하자
+  */
+```
+
+## 정리
+```
+  Koa를 사용하여 백엔드 서보를 만드는 기본 개념
+  REST API를 이해하고 어떻게 작동하는지, 자바스크립트의 배열을 사용하여 구현
+  다음 장에서는 MySQL, MongoDB 등 데이터베이스에 정보를 저장하여 관리
+  데이터베이스를 사용하면 다양하고 효율적인 방식으로 많은 양의 데이터를 읽고 쓸수 있음
+```
