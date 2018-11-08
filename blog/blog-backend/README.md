@@ -187,3 +187,87 @@
     console.log('bye');
   });
 ```
+
+## nodemon 사용
+```
+  서버 코드가 변경할 때마다 서버를 재시작 할 필요가 없는 라이브러리
+  yarn add --dev nodemon
+```
+
+## koa-router 사용
+```
+  다른 작업을 처리할 수 있도록 라워를 사용해야함
+  koar-router 모듈을 설치해야 한다.
+  yarn add koa-router
+```
+
+### 기본 사용법
+```javascript
+  // koa-router 모듈의 기본적인 사용법
+  const koa = require('koa');
+  const Router = require('koa-router');
+
+  const app = new koa();
+  const router = new Router();
+  
+  // 라우터 설정
+  router.get('/', (ctx) => {
+    ctx.body = '홈';
+  });
+  router.get('/about', (ctx) => {
+    ctx.body = '소개';
+  });
+
+  // app 인스턴스에 라우터 적용
+  app.use(router.routes()).use(router.allowedMethods());
+
+  app.listen(4000, () => {
+    console.log('listening to port 4000');
+  });
+```
+
+### 라우트 파라미터와 쿼리
+```javascript
+  /*
+  라우트의 파라미터와 쿼리를 읽는 방법
+    : 라우터의 파라미터를 설정할 때는 /about/:name (:)을 사용하여 라우트 경로를 설정
+      파라미터가 있을 수도 있고 없을 수도 있다면 /about/:name? 같은 형식으로 파라미터 이름 뒤에 물음표를 사용
+      설정한 파라미터는 함수의 ctx.params 객체에서 조회 가능
+    
+    URL 쿼리의 경우, 예를 들어 /posts/?id=10 같은 형식으로 요청했다면 { id: '10' } 형태의 객체를 ctx.query에서 조회 가능
+    쿼리스트링을 객체 형태로 파싱해 주므로 별도로 파싱 함수를 돌릴 필요는 없다.(문자열 형태의 쿼리스트링을 조회해야 할 때는 ctx.querystring을 사용)
+  */
+
+  // koa-router 모듈의 기본적인 사용법
+  const koa = require('koa');
+  const Router = require('koa-router');
+
+  const app = new koa();
+  const router = new Router();
+
+  // 라우터 설정
+  router.get('/', (ctx) => {
+    ctx.body = '홈';
+  });
+
+  router.get('/about/:name?', (ctx) => {
+    const { name } = ctx.params;
+    ctx.body = name ? `${name}의 소개` : '소개';
+  });
+
+  router.get('/posts', (ctx) => {
+    const { id } = ctx.query;
+    // id의 존재 유무에 따라 다른 결과 출력
+    ctx.body = id ? `포스트 #${id}` : '포스트 아이디가 없습니다.';
+  });
+
+
+  // app 인스턴스에 라우터 적용
+  app.use(router.routes()).use(router.allowedMethods());
+
+  app.listen(4000, () => {
+    console.log('listening to port 4000');
+  });
+
+  // http://localhost:4000/about/react, http://localhost:4000/posts, http://loacalhost:4000/posts/?id=10
+```
