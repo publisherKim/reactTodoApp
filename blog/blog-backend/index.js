@@ -2,13 +2,15 @@
 
   const app = new Koa();
 
-  app.use( (ctx) => {
+  app.use( (ctx, next) => {
     console.log(1);
     ctx.body = 'melong';
+    next();
   });
 
-  app.use( () => {
+  app.use( (ctx, next) => {
     console.log(2);
+    next();
   });
 
   app.use(ctx => ctx.body = 'hello world');
