@@ -349,3 +349,48 @@
     console.log('listening to port 4000');
   });
 ```
+
+### posts 라우트 생성
+```javascript
+  /*
+  api 라우트 내부에 posts 라우트 만들기
+  src/api/posts
+  */
+  const Router = require('koa-router');
+
+  const posts = new Router();
+
+  const printInfo = (ctx) => {
+    ctx.body = {
+      method: ctx.method,
+      path: ctx.path,
+      prams: ctx.params
+    };
+  };
+
+  posts.get('/', printInfo);
+  posts.post('/', printInfo);
+  posts.get('/:id', printInfo);
+  posts.delete('/:id', printInfo);
+  posts.put('/:id', printInfo);
+  posts.patch('/:id', printInfo);
+
+  module.exports = posts;
+  /*
+    posts 라우트에 여러 종류의 라우트를 설정한 후 모두 printInfo 함수를 호출하도록 설정
+    문자열이 아닌 JSON 객체를 반환하도록 설정했고
+    이 객체에는 현재 요청의 메서드, 경로, 파라미터를 담음
+  */
+
+  // api 라우트에 posts 라우트 연결하기
+  const Router = require('koa-router');
+  const posts = require('./posts');
+
+  const api = new Router();
+
+  api.use('/posts', posts.routes());
+
+  module.exports = api;
+
+  // posts 라우트를 불러와 설정
+```
