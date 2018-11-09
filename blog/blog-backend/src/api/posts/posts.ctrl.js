@@ -1,99 +1,34 @@
-let postId = 1;
+const Post = require('models/post');
 
-const posts = [
-  {
-    id: 1,
-    title: '제목',
-    body: '내용'
-  },
-  {
-    id: 2,
-    title: '제목2',
-    body: '내용2'
+exports.write = async (ctx) => {
+  const { title, body, tags } = ctx.request.body;
+
+  // 새 Post 인스턴스를 생성합니다.
+  const post = new Post({
+    title, body, tags
+  });
+  console.log('is send?: ', title, body, tags);
+  try {
+    await post.save(); // 데이터베이스에 등록합니다.
+    ctx.body = post; // 저장된 결과를 반환합니다.
+  } catch (e) {
+    // 데이터베이스의 오류 발생
+    ctx.throw(e, 500);
   }
-];
-
-exports.write = (ctx) => {
-  const {
-    title,
-    body
-  } = ctx.request.body;
-
-  postId +=1;
-
-  const post = { id: postId, title, body };
-  posts.push(post);
-  ctx.body = post;
 };
 
 exports.list = (ctx) => {
-  ctx.body = posts;
+
 };
 
 exports.read = (ctx) => {
-  const { id }  = ctx.params;
-  const post = posts.find(p => p.id.toString() === id);
 
-  if( !post ) {
-    ctx.status = 404;
-    ctx.body = {
-      message: '포스트가 존재하지 않습니다.'
-    };
-    return;
-  }
-
-  ctx.body = post;
 };
 
 exports.remove = (ctx) => {
-  const { id } = ctx.params;
-  const index = posts.findIndex(p => p.id.toString() === id);
 
-  if(index === -1) {
-    ctx.status = 404;
-    ctx.body = {
-      message: '포스트가 존재하지 않습니다.'
-    };
-    return;
-  }
-  
-  posts.splice(index, 1);
-  ctx.status = 204;
-};
-
-exports.replace = (ctx) => {
-  const { id } = ctx.params;
-  const index = posts.findIndex(p => p.id.toString() === id);
-
-  if (index === -1) {
-    ctx.status = 404;
-    ctx.body = {
-      message: '포스트가 존재하지 않습니다.'
-    };
-    return;
-  }
-
-  posts[index] = {
-    id,
-    ...ctx.request.body
-  };
-  ctx.body = posts[index];
 };
 
 exports.update = (ctx) => {
-  const { id } = ctx.params;
-  const index = posts.findIndex(p => p.id.toString() === id);
-  if (index === -1) {
-    ctx.status = 404;
-    ctx.body = {
-      message: '포스트가 존재하지 않습니다.'
-    };
-    return;
-  }
 
-  posts[index] = {
-    ...posts[index],
-    ...ctx.request.body
-  };
-  ctx.body = posts[index];
 };

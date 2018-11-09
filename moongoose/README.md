@@ -457,3 +457,49 @@
       }
   };
 ```
+
+### 데이터 생성
+```javascript
+  const Post = require('model/post');
+
+  exports.write = (ctx) => {
+    const { title, body, tags } = ctx.request.body;
+
+    const post = new Post({
+      title, body, tags
+    });
+
+    try {
+      await post.save();
+      ctx.body = post;
+    } catch(e) {
+      ctx.throw(e, 500);
+    }
+  };
+  /*
+    포스트의 인스턴스를 만들 때는 new 키워드를 사용
+    생성자 함수의 파라미터에 정보를 지닌 객체를 넘김
+
+    인스턴스를 만든다고 해서 바로 데이터베이스에 저장되는것은 아님
+    .save() 함수를 실행시켜야 비로소 데이터베이스에 저장됨
+    함수의 반환 값은 Promise여서 async/await 문법으로 데이터베이스 
+    저장 요청을 완료할 때까지 await를 사용하야 대기 가능
+    await를 사용하려면 함수를 선언하는 부분 앞에 async 키워드를 넣어야 하고,
+    await를 사용할 때는 try-catch문으로 오류를 처리해야 함
+  */
+  exports.list = (ctx) => {
+
+  };
+
+  exports.read = (ctx) => {
+
+  };
+
+  exports.remove = (ctx) => {
+
+  };
+
+  exports.update = (ctx) => {
+
+  };
+```
