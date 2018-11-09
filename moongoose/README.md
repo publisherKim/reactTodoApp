@@ -406,9 +406,54 @@
 ```
 
 ### NODE_PATH와 jsconfig.json
-```
+```javascript
+  /*
   이전 리액트 프로젝트에서 NODE_PATH를 지정하여 상대 경로가 아닌 절대 경로로 파일을 불러옴
 
   api 컨트롤러에서 모델을 사용하려면 require('../../models/post') 형식으로 모델을 불러와야 하는데
   이 코드가 헷갈릴수 있으므로 백엔트 프로젝트에서도 NODE_PATH를 지정하여 require('model/post') 형식으로 불러올 수 있도록 설정
+  */
+
+  // package.json -scripts
+  "scripts": {
+    "start": "NODE_PATH=src node src",
+    "start:dev": "NODE_PATH=src nodemon --watch src/ src/index.js"
+  }
+  // window cross-env
+  yarn add --dev cross-env
+
+  // jsconfig.json
+  {
+    "compilerOptions": {
+      "baseUrl": "./src"
+    }
+  }
+
+  // ESLint
+  const path = require('path');
+
+  module.exports = {
+      "env": {
+          "browser": true,
+          "commonjs": true,
+          "es6": true,
+          "node": true
+      },
+      "extends": "eslint:recommended",
+      "parserOptions": {
+          "ecmaVersion": 2015,
+          "sourceType": "module"
+      },
+      "settings": {
+          "import/resolver": {
+              node: { path: [path.resolve('./src')] }
+          },
+      },
+      "rules": {
+          "no-unused-vars": 1,
+          "comma-dangle": 0,
+          "eol-last": 0,
+          "no-console": 0
+      }
+  };
 ```

@@ -1,3 +1,5 @@
+const path = require('path');
+
 module.exports = {
     "env": {
         "browser": true,
@@ -9,6 +11,11 @@ module.exports = {
     "parserOptions": {
         "ecmaVersion": 2015,
         "sourceType": "module"
+    },
+    "settings": {
+        "import/resolver": {
+            node: { path: [path.resolve('./src')] }
+        },
     },
     "rules": {
         "no-unused-vars": 1,
