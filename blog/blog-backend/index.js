@@ -8,7 +8,7 @@ const app = new koa();
 const router = new Router();
 
 const {
-  PORT: port,
+  PORT: port = 4000,
   MONGO_URI: mongoURI
 } = process.env
 
