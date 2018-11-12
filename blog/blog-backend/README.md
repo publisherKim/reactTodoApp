@@ -528,3 +528,83 @@ exports.write = async (ctx) => {
     }
   };
 ```
+
+## 데이터 삭제와 수정
+
+### 데이터 삭제
+```javascript
+  /*
+    데이터를 삭제할때 사용하는 함수들
+      - remove: 특정 조건을 만족하는 데이터들을 모두 지움
+      - findByIdAndRemove: id를 찾아서 지움
+      - findOneAndRemove: 특정 조건을 만족하는 데이터 하나를 찾아서 제거
+  */
+  // src/api/posts/posts.ctrl.js - remove
+  /*
+    DELETE /api/posts/:id
+  */
+  exports.remove = async (ctx) => {
+    const { id } = ctx.params;
+    try {
+      await Post.findByIdAndRemove(id).exec();
+      ctx.status = 204;
+    } catch(e) {
+      ctx.throw(e, 500)
+    }
+  };
+```
+
+### 데이터 수정
+```javascript
+  /*
+    데이터를 업데이트할 때는 findByIdAndUpdate 함수를 사용
+    첫번째 parameter id
+    두번째 parameter 업데이트 내용
+    세번째 parameter 업데이트 설정 객체
+  */
+  // src/api/posts/posts.ctrl.js - update
+  /*
+    PATCH /api/posts/:id
+    { title, body, tags }
+  */
+  exports.update = async (ctx) => {
+    const { id } = ctx.params;
+
+    try {
+      const post = await Post.findByIdAndUpdate(id, ctx.request.body, {
+        new: true
+        // 이값을 설정해야 업데이트 된 객체를 반환한다.
+        // 설정하지 않으면 업데이트 되기전의 객체를 반환한다.
+      }).exec();
+      // 포스트가 존재하지 않을 때
+      if(!post) {
+        ctx.status = 404;
+        return;
+      }
+      ctx.body = post;
+    } catch(e) {
+      ctx.throw(e, 500);
+    }
+  };
+```
+
+## 요청 검증
+### ObjectId 검증
+```javascript
+  /*
+    요청을 검증하기
+    id가 올바바른 ObjectId 형식이 아니면 500 오류가 발생
+    500 오류는 보통 서버에서 처리하지 않아 내부 적으로 문제가 생겼을때 발생
+
+    잘못된 id를 전달했다면 클라이언트가 요청을 잘못 보낸 것이니 400 오류르 띄워주는게 맞음
+    그러려면 id 값이 올바른 ObjcetId인지 확인이 필요함.
+  */
+  const { ObjectId } = require('mongoose').Types;
+  ObjectId.isValide(id);
+
+  /*
+    Object Id를 검증해야 하는 API는 read, remove, update 이렇게 세 가지 이다.
+    모든 함수에서 이를 확인하여 처리하는데, 일일이 작성하면 불필요한 코드가 중복
+    이를 막기위해 미들웨어를 만들어 활용한다.
+  */
+```

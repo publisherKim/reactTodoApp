@@ -1,5 +1,19 @@
 const Post = require('models/post');
 
+const { ObjectId } = require('mongoose').Types;
+
+exports.checkObjectId = (ctx, next) => {
+  const { id } = ctx.params;
+
+  // 검증 실패
+  if(!ObjectId.isValid(id)) {
+    ctx.status = 400; // 400 Bad Request
+    return null;
+  }
+
+  return next();
+};
+
 /*
   POST /api/posts
   { title, body, tags }
@@ -55,7 +69,7 @@ exports.read = async (ctx) => {
 */
 exports.remove = async (ctx) => {
   const { id } = ctx.params;
-    
+
   try {
     await Post.findByIdAndRemove(id).exec();
     ctx.status = 204;
@@ -64,6 +78,24 @@ exports.remove = async (ctx) => {
   }
 };
 
-exports.update = (ctx) => {
-  
+/*
+  PATCH /api/posts/:id
+  { title, body, tags }
+*/
+exports.update = async (ctx) => {
+  const { id } = ctx.params;
+
+  try {
+    const post = await Post.findByIdAndUpdate(id, ctx.request.body, {
+      new: true
+    }).exec();
+
+    if(!post) {
+      ctx.status = 404;
+      return;
+    }
+    ctx.body = post;
+  } catch(e) {
+    ctx.throw(e, 500);
+  }
 };
