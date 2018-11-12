@@ -794,3 +794,52 @@ exports.write = async (ctx) => {
 
   // Last-Page라는 커스텀 HTTP 헤더를 설정함
 ```
+
+### 내용 길이 제한
+```javascript
+  /*
+    body 길이가 200자 이상이면 말줄임표 달고 문자열을 자르기
+
+    JSON 형태로 변환해서 처리해야함
+      이유는 mongoose의 문서 인스턴스로 Getter, Setter등 내장 함수들을 지니고 있기 때문에
+      변환하지 않을 경우 불필요한 데이터들이 들어감
+  */
+
+  // src/api/posts/posts.ctrl.js - list 중 일부
+  const limitBodyLength = post => ({
+    ...post.toJSON(),
+    body: post.body.length < 200 ? post.body : `${post.body.slice(0, 200)}...`
+  });
+  ctx.body = posts.map(limitBodyLength);
+
+  /*
+    lean() 함수 호출을 이용하기 => 반환 형식이 JSON형태
+  */
+  // src/api/posts/posts.ctrl.js - list
+  exports.list = async (ctx) => {
+    const page = parseInt(ctx.query.page || 1, 10);
+
+    if (page < 1) {
+      ctx.status = 400;
+      return;
+    }
+
+    try {
+      const posts = await Post.find()
+        .sort({_id: - 1})
+        .limit(10)
+        .skip((page - 1) * 10)
+        .lean()
+        .exec()
+      const postCount = await Post.count().exec();
+      const limitBodyLength = post => ({
+        ...post,
+        body: post.body.length < 200 ? post.body: `${post.body.slice(0, 200)}...`
+      });
+      ctx.body = posts.map(limitBodyLength);
+      ctx.set('Last-Page', Math.ceil(postCount / 10));
+    } catch(e) {
+      ctx.throw(500, e);
+    }
+  };
+```

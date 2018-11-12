@@ -51,10 +51,6 @@ exports.write = async (ctx) => {
   GET /api/posts
 */
 exports.list = async (ctx) => {
-  const limitBodyLength = post => ({
-    ...post.toJSON(),
-    body: post.body.length < 200 ? post.body : `${post.body.slice(0, 200)}...`
-  });
   const page = parseInt(ctx.query.page || 1, 10);
 
   if (page < 1) {
@@ -63,9 +59,12 @@ exports.list = async (ctx) => {
   }
 
   try {
-    const posts = await Post.find().sort({_id: - 1}).limit(10).skip((page - 1) * 10).exec();
+    const posts = await Post.find().sort({_id: - 1}).limit(10).skip((page - 1) * 10).lean().exec();
     const postCount = await Post.count().exec();
-    
+    const limitBodyLength = post => ({
+      ...post,
+      body: post.body.length < 200 ? post.body: `${post.body.slice(0, 200)}...`
+    })
     ctx.set('Last-Page', Math.ceil(postCount / 10));
     ctx.body = posts.map(limitBodyLength);
   } catch(e) {
