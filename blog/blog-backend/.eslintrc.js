@@ -8,14 +8,14 @@ module.exports = {
         "node": true
     },
     "extends": "eslint:recommended",
+    "settings": {
+        "import/resolver": {
+            node: { paths: [path.resolve('./src')] }
+        },
+    },
     "parserOptions": {
         "ecmaVersion": 2015,
         "sourceType": "module"
-    },
-    "settings": {
-        "import/resolver": {
-            node: { path: [path.resolve('./src')] }
-        },
     },
     "rules": {
         "no-unused-vars": 1,
