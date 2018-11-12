@@ -448,4 +448,58 @@ exports.write = async (ctx) => {
   posts.patch('/:id', postsCtrl.update);
 
   module.exports = posts;
+
+  // write 함수 먼저 구현하기 src/api/posts/posts.ctrl.js
+  /*
+    POST /api/posts
+    { title, body, tags } 
+  */
+  exports.write = async (ctx) => {
+    const { title, body, tags } = ctx.request.body;
+
+    // 새 Post 인스턴스를 만듬
+    const post = new Post({
+      title, body, tags
+    });
+
+    try {
+      await post.save();  // 데이터베이스에 등록
+      ctx.body = post;  // 저장된 결과를 반환
+    } catch(e) {
+      // 데이터베이스의 오류가 발생
+      ctx.throw(e, 500);  
+    }
+  };
+  /*
+    포스트의 인스턴스를 만들 떄는 new 키워드를 사용
+    생성자 함수의 파라미터에 정보를 지닌 객체를 넣음
+
+    인스턴스를 만든다고 해서 바로 데이터베이스에 저장되는건 아님
+    .save() 함수를 실행시켜야 데이터베이스에 저장됨
+    이 함수의 반환 값은 Promise여서 async/await 문법으로 데이터베이스
+    저장 요청을 완료할 때까지 await를 사용하여 대기 가능
+    await를 사용 하려면 함수를 선언하는 부분 앞에 async 키워드를 넣어야 하고,
+    await를 사용할 때는 try~catch문으로 오류를 처리해 준다.
+  */
+```
+
+## 데이터 조회
+```javascript
+  // src/api/posts/posts.ctrl.js - list
+  /*
+    GET /api/posts
+  */
+  exports.list = async (ctx) => {
+    try {
+      const posts = await Post.find().exec();
+      ctx.body = posts;
+    } catch(e) {
+      ctx.throw(e, 500)
+    }
+  };
+
+  /*
+    find() 함수를 호출한 후에는 exec()를 붙어 주어야 서버에 쿼리를 요청한다.
+    데이터를 조회할때 특정 조건을 설정할 수 있으며, 불러오는 제한도 설정 가능하다.
+  */
 ```
