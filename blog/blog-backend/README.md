@@ -600,11 +600,54 @@ exports.write = async (ctx) => {
     그러려면 id 값이 올바른 ObjcetId인지 확인이 필요함.
   */
   const { ObjectId } = require('mongoose').Types;
-  ObjectId.isValide(id);
+  ObjectId.isValid(id);
 
   /*
     Object Id를 검증해야 하는 API는 read, remove, update 이렇게 세 가지 이다.
     모든 함수에서 이를 확인하여 처리하는데, 일일이 작성하면 불필요한 코드가 중복
     이를 막기위해 미들웨어를 만들어 활용한다.
   */
+  // src/api/posts.ctrl.js
+  const Post = require('models/post');
+
+  const { ObjectId } = require('mongoose').Types;
+
+  exports.checkObjectId = (ctx, next) => {
+    const { id } = ctx.params;
+
+    // 검증 실패
+    if(!ObjectId.isValid(id)) {
+      ctx.status = 400; // 400 Bad Request
+      return null;
+    }
+
+    return next();
+  };
+
+  // 라우트를 설정하는 src/api/posts/index.js에서 ObjectId 검증이 필요한 부분에 추가한다.
+  // src/api/posts/index.js
+  const Router = require('koa-router');
+  const postsCtrl = require('./posts.ctrl');
+
+  const posts = new Router();
+
+  // src/api/posts.ctrl.js
+  const { ObjectId } = require('mongoose').Types;
+
+  exports.checkObjectId = (ctx, next) => {
+    const { id } = ctx.params;
+
+    // 검증 실패
+    if(!ObjectId.isValid(id)) {
+      ctx.status = 400; // 400 Bad Request
+      return null;
+    }
+
+    return next();
+  };
+
+  // 라우트를 설정하는 src/api/post/index.js에서 ObjectId 검증이 필요한 부분에 방금 만든 미들웨어를 추가한다.
+  posts.get('/:id', postsCtrl.checkObjectId, postsCtrl.read);
+  posts.delete('/:id', postsCtrl.checkObjectId, postsCtrl.remove);
+  posts.patch('/:id', postsCtrl.checkObjectId, postsCtrl.update);
 ```
