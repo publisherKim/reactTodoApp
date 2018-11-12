@@ -651,3 +651,103 @@ exports.write = async (ctx) => {
   posts.delete('/:id', postsCtrl.checkObjectId, postsCtrl.remove);
   posts.patch('/:id', postsCtrl.checkObjectId, postsCtrl.update);
 ```
+
+### Request Body 검증
+```javascript
+  /*
+    write, update API에서 전달받은 요청 내용을 검증하기
+    포스트를 작성할 때 서버는 title, body, tags 값을 모두 전달 받아야 함
+    클라이언트가 값을 빼 먹었을 때는 400 오류가 발생함
+    요청 내용을 비운 상태에서 write API를 실행해도 요청이 성공하여 비어 있는 포스트가 등록 됨
+
+    객체를 검증하려고 각 값을 if문으로 검증하는 방법도 있지만, 
+    이를 수월하게 하는 라이브러리인 Joi(https://github.com/hapijs/joi)를 설치하여 사용
+    yarn add joi
+  */
+```
+
+## 페이지네이션 구현
+```
+  블로그에서 포스트 목록을 볼 때 페이지 하나에 보이는 포스트 개수는 10~20개 정도가 적당
+  포스트 목록을 볼 때는 포스트 전체 내용을 보여 줄 필요 없이 첫 200글자 정도만 보여주면 적당.
+  불필요하게 모든 내용을 보여주면 로딩 속도가 지연되고 트래픽도 낭비됨.
+  list API에서 페이지 기능을 구현하기
+  mongoose-pagination(https://www.npmjs.com/package/mongoose-pagination) 라이브러리를 사용하면 매우 간편하게 구현 가능
+```
+
+### 가짜 데이터 생성해 내기
+```
+  Lorem Ipsum(http://www.lipsum.com/)
+```
+
+### 포스트를 역순으로 불러오기
+```javascript
+  /*
+    페이지 기능을 구현하기에 앞서 포스트를 역순으로 불러오기
+    sort() 구문을 활용
+  */
+  // src/api/posts/posts.ctrl.js - list
+  exports.list = async (ctx) => {
+    try {
+      const posts = await Post.find().sort({_id: -1}).exec();
+      ctx.body = posts;
+    } catch(e) {
+      ctx.throw(e, 500);
+    }
+  };
+```
+
+### 보이는 개수 제한
+```javascript
+  /*
+    한번에 보이는 개수를 제한하기
+    개수를 제한할 때는 limit 함수를 사용
+    파라미터에 제한할 숫자를 넣으면 됨
+    예를 들어 열개로 제한한다면 limit(10)이라고 입력한다.
+  */
+  // src/api/posts/posts.ctrl.js - list
+  exports.list = async (ctx) => {
+    try {
+      const posts = await Post.find().sort({_id: -1}).limit(10).exec();
+      ctx.body = posts;
+    } catch (e) {
+      ctx.throw(e, 500);
+    }
+  };
+```
+
+### 페이지 기능 구현
+```javascript
+  /*
+    limit with skip 함수를 이용해 구현
+    skip(page - 1) * 10 을 넣어주면 됨
+    1페이지에는 처음 열 개를 불러오고 
+    2페이지에는 다음 10개를 불러오게 된다.
+    page 값을 쿼리에서 받아오게 설정 이 값이 없으면 페이지 1로 간주하여 코드를 작성
+  */
+  
+  // src/api/posts/posts.ctrl.js - list
+  exports.list = async (ctx) => {
+    // page가 주어지지 않았다면 1로 간주
+    // query는 문자열 형태로 받아 오므로 숫자로 변환
+    const page = parseInt(ctx.query.page || 1, 10);
+
+    // 잘못된 페이지가 주어졌다면 오류
+    if(page < 1) {
+      ctx.status = 400;
+      return;
+    }
+
+    try {
+      const posts = await Post.find()
+        .sort({_id: - 1})
+        .limit(10)
+        .skip((page - 1) * 10)
+        .exec();
+      ctx.body = posts;
+    } catch(e) {
+      ctx.throw(e, 500);
+    }
+  };
+  // http://localhost:4000/api/posts?page=2 형식으로 페이지를 지정하여 조회 가능
+```
