@@ -483,7 +483,7 @@ exports.write = async (ctx) => {
   */
 ```
 
-## 데이터 조회
+### 데이터 조회
 ```javascript
   // src/api/posts/posts.ctrl.js - list
   /*
@@ -502,4 +502,29 @@ exports.write = async (ctx) => {
     find() 함수를 호출한 후에는 exec()를 붙어 주어야 서버에 쿼리를 요청한다.
     데이터를 조회할때 특정 조건을 설정할 수 있으며, 불러오는 제한도 설정 가능하다.
   */
+```
+
+### 특정포스트 조회
+```javascript
+  // 특정 id를 가진 데이터를 조회할 떄는 모델의 findById 함수를 사용한다.
+  // src/api/posts/posts.js - read
+  /*
+    GET /api/posts/:id
+  */
+  exports.read = async (ctx) => {
+    const { id } = ctx.params;
+
+    try {
+      const post = await Post.findByid(id).exec();
+
+      // 포스트가 존재하지 않습니다.
+      if(!post) {
+        ctx.status = 404;
+        return;
+      }
+      ctx.body = post;
+    } catch (e) {
+      ctx.throw(e, 500);
+    }
+  };
 ```
