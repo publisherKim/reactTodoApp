@@ -10,9 +10,7 @@ exports.write = async (ctx) => {
   const post = new Post({
     title, body, tags
   });
-  console.log('post', post);
   try {
-    console.log('isExcuted');
     await post.save(); // 데이터베이스에 등록합니다.
     ctx.body = post; // 저장된 결과를 반환합니다.
   } catch(e) {
@@ -21,6 +19,9 @@ exports.write = async (ctx) => {
   }
 }
 
+/*
+  GET /api/posts
+*/
 exports.list = async (ctx) => {
   try {
     const posts = await Post.find().exec();

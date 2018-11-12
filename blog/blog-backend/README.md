@@ -1,595 +1,439 @@
-
-## 백엔드 프로그래밍: Node.js의 Koa 프레임워크
+# moongoose를 이용한 MongoDB 연동 실습
 ```
-  18.1 소개
-  18.2 프로젝트 생성
-  18.3 Koa 기본 사용법
-  18.4 Nodemon 사용
-  18.5 koa-router 사용
-  18.6 정리
+  19.1 소개
+  19.2 MongoDB 서버 준비
+  19.3 mongoose 설치 및 적용
+  19.4 데이터베이스의 스키마와 모델
+  19.5 MongoDB 클라이언트 설치
+  19.6 데이터 생성과 조회
+  19.7 데이터 삭제와 수정
+  19.8 요청 검증
+  19.9 페이지네이션 구현
+  19. 10 정리
+```
+```
+  mongoose를 이용한 mongoDB 연동
+    1. MongoDB 기본 지식 알아보기
+    2. 작업환경 설정하기
+    3. mongoose로 데이터베이스 연결하기
+    4. 스키마와 모델 이해하기
+    5. REST API 구현하기
+    6. 페이지네이션 구현하기
 ```
 
 ## 소개
 ```
-  웹 애플리케이션을 만들 때, 보통은 리액트 같은 프런트엔드 기술만으로 필요한 기능들을 구현하기에 부족함
-  데이터를 여러 사람과 공유하려면 저장할 공간이 필요하기 때문(server)
+  데이터베이스로 웹 서비스에서 사용되는 데이터를 저장
+  효휼적으로 조회 및 수정 용이
+  기존 MySQL, OracleDB, PostgreSQL 같은 RDBMS(relation database management system)를 자주 사용
+
+  관계형 데이터 베이스의 한계
+    1. 데이터 스키마가 고정적(스키마란 데이터 베이스에 어떤 형식의 데이터를 넣을지 가리키는 정보)
+      1.1 새로 등록하는 데이터 형식이 기존에 있던 데이터들과 다르면 기존 데이터를 모두 수정해야 등록가능(수정이 번거로움)
+    2. 처리해야 할 데이터야이 늘어나면 여러 컴퓨터에 분산시키는것이 아니라 서버의 성능을 늘려야 함(scale up)
+
+  MongoDB는 이런 한계를 극복한 문서 지향적 NoSQL 데이터베이스
+    1. 등록하는 데이터들은 유동적인 스키마를 가짐
+      1.1 종류가 같은 데이터라고 하더라도, 새로 등록해야 할 데이터 형식이 바뀐다고 하더라도 기존 데이터까지 수정할 필요가 없음
+    2. 서버의 데이터양이 늘어나도 한 컴퓨터에만 처리하는 것이 아니라 여러 컴퓨터로 분산하여 처리할수 있도록 확장하기 쉬운 설계 가능
 ```
 
-### 백엔드
+### 문서란?
 ```
-  우리는 데이터를 담기위한 서버가 필요함
-  서버에 다음때 여러가지 규칙이 필요함
-  예를들어
-    : 특정 데이터를 등록할 대 사용자 인증 정보가 필요할수도 있고,
-      등록할 데이터는 어떻게 검증할지,
-      데이터 종류가 여러 가지라면 어떻게 구분할지 등을 고려해야 함
+  문서의 데이터 구조는 한 개 이상의 key-value 쌍
   
-  데이터를 조회 할때도 마찬가지 
-    : 어떤 종류의 데이터를 몇 개씩 보여 줄지,
-      어떻게 보여 줄지 등
+  {
+    "_id": ObjectId("599865213146877"),
+    "username": "ho",
+    "name": {first: "gil-dong", last: "hong"}
+  }
 
-  이런 로직들을 만드는 것을 서버 프로그래밍 또는 백엔드 프로그래밍이라고 함
+  문서는 BSON(바이너리 형태의 JSON) 형태로 저장
+  JSON 형태의 객체를 데이터베이스에 저장할 때, 큰 공수를 들이지 않고도 데이터를 데이터베이스에 등록이 용이
 
-  백엔드 프로그래밍 특징
-    : 다양한 환경,
-      언어에 구애 x
-  백엔드 언어 종류
-    : PHP, 파이썬, Golang, 자바, 자바스크립트, 루비 등
+  새로운 문서를 만들면 _id라는 고유 값을 자동으로 생성하는데, 이 값은 시간, 머신 아이디, 프로세스 아이디, 순차 번호로 되어 있어 값의 고유함을 보장함.
 
-  이 프로젝트에서 사용할 언어는 node
+  여러 문서가 들어 있는 곳을 컬렉션이라고 함
+  다른 스키마를 가지고 있는 문서들이 한컬렉션에 공존이 가능
+  {
+    "_id": ObjectId("599865213146877"),
+    "username": "ho",
+    "name": {first: "gil-dong", last: "hong"}
+  }
+  {
+    "_id": ObjectId("599865213146878"),
+    "username": "ho2",
+  }  
 ```
 
-### Node.js
+### MongoDB structure
 ```
-  처음에는 자바스크립트를 웹브라우저에서만 사용
-  속도가 빠른 편은 아니었음
-  시간이 지나면서 발전
-  크롬이 만든 V8 엔진이다.
-  서버에서도 자바스크립트를 사용할 수 있는 런타임 엔진
+  서버 하나에 데이터베이스를 여러 개 가지고 있을 수 있음
+  각 데이터베이스에는 컬렉션이 여러개 있으며, 컬렉션 내부에는 문서들이 존재함.
+  서버
+    데이터베이스
+      컬렉션                  컬렉션
+        문서                    문서
+        문서                    문서
+        문서                    문서
+
+    데이터베이스
+      컬렉션                  컬렉션                    컬렉션
+        ...                     ...                     ...
 ```
 
-### Koa
+### 스키마 디자인
 ```
-  Node.js 환경에서 웹 서버를 구축할 때는 보통 Express, Hapi, Koa 등 웹 프레임워크를 사용
-  현재 엡프로임워크중 hot: Express 소유권이 IBM -> StrongLoop로 이전 인지도 하향세
-  Koa 프레임워크는 Express falk refactoring 결과물
-  기존 Express에서 아키텍처에서 버전이 많이 바뀌어서 버전을 높이지 않고 새 이름을 붙임
+  MongoDB에서 스키마 디자인하는 방식은 기존 RDBMS에 스키마를 디자인하는 방식과 다름
+  RDBMS에서 블로그용 데이터 스키마를 설계한다면 각 포스트, 댓글마다 테이블을 만들어
+  필요에 따라 JSON해서 사용하는 것이 일반적
 
-  Koa 특징(Express와 비교)
-    - Koa는 훨씬 가볍고
-    - Node v7.6부터 정식으로 지원하는  async/await 문법 사용 가능
-    - 콜백 지옥 겪을일 없고, 비동기 작업도 편하게 관리 가능
+  RDBMS에서 데이터베이스 설계했을때 구조
+    RDBMS의 블로그 ERD
+      post                                        comment
+        *id                                         *id
+        title                                       post_id
+        body                                        user_id
+        user_id                                     text
+        created_date                                create_date
+                                user
+                                  *id
+                                  username
   
-  Node.js 기초 실습 흐름
-    - 작업 환경 준비 및 프로젝트 만들기
-    - Koa로 하는 Hello World
-    - 미들웨어 알아보기
-    - koa-router로 하는 백엔드 라우팅
-    - 라우트 모듈화 하기
+  그러나 NoSQL에서는 그냥 모든 것을 Document 하나에 넣음. 다음과 같다.
+  {
+    _id: ObjectId,
+    title: String,
+    body: String,
+    username: String,
+    createDate: String,
+    comments: [
+      {
+        _id: ObjectId,
+        text: String,
+        createDate: Date
+      }
+    ]
+  }
+  이런 상황에서 보통 MongoDB는 덧글들을 포스트 문서 내부에 가짐 문서 내부에 또 다른 문서들이 위치할 수 있는데, 이를 서브다큐먼트라고 함
+  서브다큐먼트 또한 일반 문서를 다루는 것처럼 쿼리 가능
+
+  문서에 하나에는 최대  16MB만큼 데이터 저장 가능 100자 댓글 데이터라면 대략 0.24KB를 차지함
+  16MB는 1만 6,384KB이니 문서 하나에 댓글 데이터를 6만 8,000개 까지 입력 가능
+
+  이용량을 초과할 가능성이 있다면 컬렉션을 분리시키는 것이 좋다.
 ```
 
-## 프로젝트 생성
+## MongoDB 서버 준비
+```
+  MongoDB 서버 설치
 
-### 작업 환경 준비
-```
-  Koa는 v7 이상부터 사용하는 것을 권장
-  v7 이상부터는 async/await를 바벨을 이용하여 트렌스파일링 하지 않고 바로 실행 가능
-```
+  macOS home brew를 이용하여 간편하게 설치
+  1. brew update
+  2. brew install mongodb
+  3. brew services start mongodb
 
-### 프로젝트 생성
-```
-  블로그 서비스와 연동할 서버 만들기
-    : mkdir blog
-      cd blog
-      mkdir blog-backend
-      blog-backend
-      yarn init
-      cat package.json
-      yarn add koa
-```
+  windows 
+  1. https://www.mongodb.com/download-center?jmp=homepage#community 에서 인스톨러를 다운받아 설치
+  2. 데이터베이스가 저장되는 경로: C:\data\db
+  3. 기본 설치 경로: C:\Program Files\MongoDB\Server\버전\bin
+  4. 해당 디렉터리로 이동하여 mongod 명령어를 입력해서 서버를 실행 가능
+  5. 데이터베스 디렉토리 임의 설정: 디렉토리를 먼저 만들고, mongod -dbpath "c:\custom_folder" 형식으로 명령어를 실행
 
-### ESLint config
-```
-  자바스크립트 문법과 코드스타일 검토 도구인 ESLint 설치 및 적용하기
-  yarn global eslint
-  eslint -v
-  yarn add eslint
-  eslint --init
+  mongoDB 환경변수 setting
+  시스템창 -> 고급 시스템 설정 -> 환경변수 -> PATH 선택 -> 편집 -> 새로 만들기 -> C:\Program Files\MongoDB\Server\버전\bin입력 -> 확인
 ```
 
-### ESLint customizing
+## mongoose 설치 및 적용
 ```
-  ESLint 규칙이 너무 엄격해서 
-  몇가지를 좀 느슨하게 만들기
-```
-
-## Koa 기본 사용법
-
-### hello world 띄우기
-```javascript
-  // koa framework load
-  const Koa = require('koa');
-
-  // instance make it
-  const app = new Koa();
-
-  // ctx.body 에 문자열 할당
-  app.use((ctx) => {
-    ctx.body = 'hello world';
-  });
-
-  // port config
-  app.listen(4000, () => {
-    console.log('listening to port 4000');
-  });
-```
-
-### 미들웨어
-```javascript
-  /*
-  Koa 애플리케이션은 미들웨어의 배열로 구성
-  use 함수를 이용해 등록
-  */
-  app.use(ctx => ctx.body = 'hello wrold');
-  /*
-    app.use 파라미터로 함수가 하나의 미들웨어 이다.
-    Koa의 미들웨어 함수에서는 두가지 파라미터를 받을수 있다.
-    첫번째는 ctx, 두번째는 next이다.
-    ctx는 웹 요청과 응답 정보를 가짐
-    next는 현재 처리중인 미들웨어의 다음 미들웨어를 호출하는 함수
-    미들웨어를 등록하고 next를 실행하지 않으면 그 다음 미들웨어를 처리하지 않는다.
-    미들웨어는 app.use로 등록하는 순서대로 처리함
-  */
-  const Koa = require('koa');
-
-  const app = new Koa();
-
-  app.use( _ => {
-    console.log(1);
-  });
-
-  app.use( _ => {
-    console.log(2);
-  });
-
-  app.use( ctx => ctx.body = 'hello world');
-
-  app.listen( 4000, _ => console.log('listening to port 4000'));
-```
-
-### next()는 프로미스다.
-```javascript
-  /*
-  next를 실행하면 프로미스를 반환
-  따라서 다음 작업들이 끝나고 난 후 특정 작업을 수행 가능
-  */
-  app.use((ctx, next) => {
-    console.log(1);
-    next().then(() => {
-      console.log('bye');
-    })
-  });
-  // console result: excute order thinking
-  1
-  2
-  bye
-```
-### async/await 사용
-```javascript
-  /*
-  Koa에서는 async/await를 정식으로 지원하기 때문에 편하게 사용가능(express의경우 편법을 동원해서 사용해야함)
-  async/await는 서버에서 매우 유용하게 사용가능
-  특히 데이터베이스에 요청할 때 콜백을 사용 할 필요가 없어서 깔끔하게 작성 가능
-  */
-  app.use(async (ctx, next) => {
-    console.log(1);
-    await next();
-    console.log('bye');
-  });
-```
-
-## nodemon 사용
-```
-  서버 코드가 변경할 때마다 서버를 재시작 할 필요가 없는 라이브러리
-  yarn add --dev nodemon
-```
-
-## koa-router 사용
-```
-  다른 작업을 처리할 수 있도록 라워를 사용해야함
-  koar-router 모듈을 설치해야 한다.
-  yarn add koa-router
-```
-
-### 기본 사용법
-```javascript
-  // koa-router 모듈의 기본적인 사용법
-  const koa = require('koa');
-  const Router = require('koa-router');
-
-  const app = new koa();
-  const router = new Router();
+  mongoose는 Node.js 환경에서 사용하는 MongoDB 기반 ODM(Object Data Modelling) 라이브러리이다.
+  이 라이브러리는 데이터베이스 문서들을 자바스크립트 객체처럼 사용 가능하게 해줌
   
-  // 라우터 설정
-  router.get('/', (ctx) => {
-    ctx.body = '홈';
-  });
-  router.get('/about', (ctx) => {
-    ctx.body = '소개';
-  });
+  yarn add mongoose dotenv
 
-  // app 인스턴스에 라우터 적용
-  app.use(router.routes()).use(router.allowedMethods());
-
-  app.listen(4000, () => {
-    console.log('listening to port 4000');
-  });
+  dotenv는 환경변수들을 파일에 넣고 사용할 수 있게 하는 개발 도구
+  mongoose를 연결할때, 서버 계정과 비밀번호를 입력시 민감한 정보는 코드에 직접 작성 하지 않고
+  환경 변수로 설정하는 것이 좋다.
+  .gitingnor를 작성하여 환경변수가 들어 있는 파일을 제외한다.
 ```
 
-### 라우트 파라미터와 쿼리
+### .env 환경변수 파일 생성
 ```javascript
-  /*
-  라우트의 파라미터와 쿼리를 읽는 방법
-    : 라우터의 파라미터를 설정할 때는 /about/:name (:)을 사용하여 라우트 경로를 설정
-      파라미터가 있을 수도 있고 없을 수도 있다면 /about/:name? 같은 형식으로 파라미터 이름 뒤에 물음표를 사용
-      설정한 파라미터는 함수의 ctx.params 객체에서 조회 가능
-    
-    URL 쿼리의 경우, 예를 들어 /posts/?id=10 같은 형식으로 요청했다면 { id: '10' } 형태의 객체를 ctx.query에서 조회 가능
-    쿼리스트링을 객체 형태로 파싱해 주므로 별도로 파싱 함수를 돌릴 필요는 없다.(문자열 형태의 쿼리스트링을 조회해야 할 때는 ctx.querystring을 사용)
-  */
+  // 환경변수에는 서버에서 사용할 포트와 MongoDB 주소를 넣어준다.
 
-  // koa-router 모듈의 기본적인 사용법
-  const koa = require('koa');
-  const Router = require('koa-router');
-
-  const app = new koa();
-  const router = new Router();
-
-  // 라우터 설정
-  router.get('/', (ctx) => {
-    ctx.body = '홈';
-  });
-
-  router.get('/about/:name?', (ctx) => {
-    const { name } = ctx.params;
-    ctx.body = name ? `${name}의 소개` : '소개';
-  });
-
-  router.get('/posts', (ctx) => {
-    const { id } = ctx.query;
-    // id의 존재 유무에 따라 다른 결과 출력
-    ctx.body = id ? `포스트 #${id}` : '포스트 아이디가 없습니다.';
-  });
-
-
-  // app 인스턴스에 라우터 적용
-  app.use(router.routes()).use(router.allowedMethods());
-
-  app.listen(4000, () => {
-    console.log('listening to port 4000');
-  });
-
-  // http://localhost:4000/about/react, http://localhost:4000/posts, http://loacalhost:4000/posts/?id=10
-```
-
-### REST API
-```
-  웹 애플리케이션을 만들려면 데이터베이스에 정보를 Input and Read
-  웹 브라우저에서 데이터베이스에 직접 접속해서 데이터를 변경하면 보안상 문제가 생김
-  그런 이유로 REST API를 만들어서 사용함.
-      ->                      --
-  DB        SERVER(REST API)      클라이언트
-      --                      -->
-      처리                    응답
+  // .env
+  PORT=4000
+  MONGO_URI=mongodb://localhost/blog
   
-  클라이언트가 서버에 자신의 데이터를 조회, 생성, 삭제, 업데이트하겠다고 요청하면, 
-  서버는 필요한 로직에 따라 데이터베이스에 접근하여 작업을 처리.
-
-  REST API는 요청 종류에 따라 다른 HTTP 메서드를 사용
-  HTTP 메서드의 종류는 여러가지로, 주로 사용하는 메서드는 다음과 같다.
-
-  메서드      설명
-  GET         데이터를 조회할 때 사용
-  POST        데이터를 등록할 때 사용. 인증 작업을 거칠 때 사용하기도 함
-  DELETE      데이터를 지울 때 사용
-  PUT         데이터를 새 정보로 통째로 교체할 때 사용
-  PATCH       데이터의 특정 필드를 수정할 때 사용
-
-  이 메서드의 종류에 따라 get, post, delete, put, patch를 사용하여 라우터에서 각 메서드의 요청을 처리
-  router.get get이 바로 HTTP 메서드 GET입니다. POST 요청을 받고 싶다면 router.post(...)를 하면 됨
-
-  REST API를 설계할 때는 API 주소와 메서드에 따라 어떤 역활을 하는지 쉽게 파악할 수 있게 작성 해야 함
-
-  블로그 포스트용 REST API 예시
-  POST/posts                                포스트 작성
-  GET/posts                                 포스트 목록 조회
-  GET/posts/:id                             특정 포스트 조회
-  DELETE/posts/:id                          특정 포스트 삭제
-  PATCH/posts/:id                           특정 포스트 업데이트(구현 방식에 따라 PUT으로 사용 가능)
-  POST/posts/:id/comments                   특정 포스트에 덧글 등록
-  GET/posts/:id/comments                    특정 포스트의 덧글 목록 조회
-  DELETE/posts/:id/comments/:commentId      특정 포스트의 특정 덧글 삭제
-```
-
-### 라우트 모듈화
-```javascript
-  /*
-  프로젝트를 진행하다 보면 여러 종류의 라우트를 만듬
-  하지만 각 라우트를 index.js 파일 하나에 모두 작성하면 코드가 너무 길고, 유지보수도 어려움
-  라우터를 여러 파일에 분리시켜서 작성하고, 이를 불러와 적용하는 방법
-  */
-  // src/api/index.js
-  const Router = require('koa-router');
-
-  const api = new Router();
-
-  api.get('/test', (ctx) => {
-    ctx.body = 'test 성공';
-  });
-
-  // 라우터 내보내기
-  module.exports = api;
+  // blog는 우리가 사용할 데이터베이스 이름으로 데이터베이스가 없을경우 자동으로 생성하므로 사전에 따로 생성하지 않아도 된다.
 
   // src/index.js
-  const Koa = require('koa');
-  const Router = require('koa-router');
+  require('dotenv').config();
+  (...)
+  const {
+    PORT: port = 4000,
+    MONGO_URI: mongoURI
+  } = process.env;
+  (...)
+  app.listen(port, () => {
+    console.log('listening to port', port);
+  })
+```
 
-  const api = require('./api');
+### mongoose로 데이터베이스에 연결
+```javascript
+  // mongoose를 이영하여 서버에데이터베이스를 연결하기
 
-  const app = new Koa();
-  const router = new Router();
+  // src/index.js
+  (...)
+  const mongoose = require('mongoose');
 
-  // 라우터 설정
-  router.use('/api', api.router()); // api 라우트 적용
+  const {
+    PORT: port = 4000,
+    MONGO_URI: mongoURI
+  } = process.env;
 
-  // app 인스턴스에 라우턱 적용
-  app.use(router.routes()).use(router.allowedMethods());
-
-  app.listen(4000, () => {
-    console.log('listening to port 4000');
+  mongoose.Promise = global.Promise;
+  mongoose.connect(mongoURI).then(() => {
+    console.log('connected to mongodb');
+  }).catch((e) => {
+    console.error(e);
   });
+
+  /*
+    mongoose에서 데이터베이스에 요청할 때, 이를 Promise 기반으로 처리 가능
+    이때 어떤 형식의 Promise를 사용할지 정해야 함
+    Node v7 이전에는 공식적인 Promise가 없어 bluebird, Promise/A+등 여러 구현체중 선택
+    이제는 Node.js 자체에 Promise를 내장하고 있어서 내장된 Promise를 사용하도록 설정해 주어야 함
+
+    MongoDB 주소는 process.env 파일에 적어 놓았던 MONGO_URI 값이며, 이 주소를 사용하여 접속 하도록 설정
+  */
 ```
 
-### posts 라우트 생성
-```javascript
-  /*
-  api 라우트 내부에 posts 라우트 만들기
-  src/api/posts
-  */
-  const Router = require('koa-router');
+## 데이터베이스의 스키마와 모델
+```
+  mongoose에는 스키마(scheme)와 모델(model)이라는 개념이 있는데, 둘을 혼동하기 쉽다. 
+  스키마는 컬렉션에 들어가는 문서 내부의 각 필드가 어떤 형식으로 되어 있는지 정의하는 객체
+  반면 모델은 스키마를 사용하여 만드는 인스턴스로, 데이터베이스에서 실제 작업을 처리할 수 있는 함수들을 지니고 있는 객체
 
-  const posts = new Router();
+  스키마와 모델:
+    스키마
+      {
+        title: String,                mongoose.model(...)
+        active: Boolean,                    ->                    모델
+        date: Date...                 모델로 만들기
+      }
 
-  const printInfo = (ctx) => {
-    ctx.body = {
-      method: ctx.method,
-      path: ctx.path,
-      prams: ctx.params
-    };
-  };
-
-  posts.get('/', printInfo);
-  posts.post('/', printInfo);
-  posts.get('/:id', printInfo);
-  posts.delete('/:id', printInfo);
-  posts.put('/:id', printInfo);
-  posts.patch('/:id', printInfo);
-
-  module.exports = posts;
-  /*
-    posts 라우트에 여러 종류의 라우트를 설정한 후 모두 printInfo 함수를 호출하도록 설정
-    문자열이 아닌 JSON 객체를 반환하도록 설정했고
-    이 객체에는 현재 요청의 메서드, 경로, 파라미터를 담음
-  */
-
-  // api 라우트에 posts 라우트 연결하기
-  const Router = require('koa-router');
-  const posts = require('./posts');
-
-  const api = new Router();
-
-  api.use('/posts', posts.routes());
-
-  module.exports = api;
-
-  // posts 라우트를 불러와 설정
+                            데이터베이스(모델을 사용하여 데이터 읽고 쓰기)
 ```
 
-### 컨트롤러 파일 작성
+### 스키마생성
 ```javascript
   /*
-  라우트를 작성할 때, 라우트를 설정하는 부분 중 파라미터 쪽에 화살표 함수 문법을 사용하여 라우트 처리 함수를 바로 선언 가능
-  posts.get('/', (ctx) => {...});
-
-  하지만 각 라우트 처리 함수의 코드 길이가 같다면 라우터 설정을 하눈에 보기가 어렵다.
-  가독성을 위해 라우트 처리 함수들을 따로 다른 파일로 분리해서 관리가 가능
-  이 라우읕 처리 함수만 모아 놓은 파일이 컨트롤러
-  컨트롤러에서는 백엔드 기능을 구현
-
-  koa-bodyparser 미들웨어를 적용해야 함
-  이 미들웨어는 POST/PUT/PATCH 같은 메서드의 Requet Body JSON 형식으로 데이터를 넣어주면,
-  이를 파싱하여 서버에서 사용 가능
-  yarn add koa-bodyparser
+    모델을 만들려면 사전에 스키마를 만들어 주어야 함.
+      - 제목
+      - 내용
+      - 태그
+      - 작성일
+    포스트 하나에는 이렇게 총 네 가지 정보가 필요함.
+    각 정보에 대한 필드 이름과 데이터 타입을 설정하여 스키마를 만듬
   */
-  const Koa = require('koa');
-  const Router = require('koa-router');
-  const bodyParser = require('koa-bodyparser');
 
-  const api = require('./api');
-  const app = new Koa();
-  const router = new Router();
+  // 필드 이름과 데이터 타입 설정
+  /*
+    필드이름                    데이터 타입                   설명
+    title                       string                      제목
+    body                        string                      내용
+    tags                        array                       태그 목록
+    publishDate                 date                        작성 날짜
 
-  // 라우터 설정
-  router.use('/api', api.routes());
+    title, body, tags, publishedDate 총 네 가지 필드가 있는 스키마를 작성
+  */
 
-  // 라우터 적용 전에 bodyParser 적용
-  app.use(bodyParser());
+  // 스키마와 모델에 관련된 코드는 src/models
+  const mongoose = require('mongoose');
 
-  // app 인스턴스에 라우터 적용
-  app.use(router.routes()).use(router.allowedMethods());
+  const { Schema } = mongoose;
 
-  app.listen(4000, () => console.log('listening to port 4000'));
-
-  // 컨트롤러를 만든다.
-  let postId = 1;
-
-  const posts = [
-    {
-      id: 1,
-      title: '제목',
-      body: '내용'
+  const Post = new Schema({
+    title: String,
+    body: String,
+    tags: [String], // 문자열 배열
+    publishDate: {
+      type: Date,
+      default: new Date() // 현재 날짜를 기본 값으로 지정
     }
-  ];
+  });
 
   /*
-    포스트 작성
-    POST /api/posts
-    { title, body }
+    스키마를 만들 때는 mongoose 모듈의 Schema를 사용하여 정의 함 그리고 각 필드 이름과 필드의 데이터 타입 정보가 들어 있는 객체를 작성함
+    필드 기본 값은 default를 설정해 주면 됨
   */
-  exports.write = (ctx) => {
-    // REST API의 request body는 ctx.request.body에서 조회할 수 있다.
-    const {
-      title,
-      body
-    } = ctx.request.body;
 
-    postId += 1; // 기존 postId 값에 1을 더합니다.
+  // Schema에서 지원하는 타입
+  /*
+    타입                    
+    String: 문자열       
+    Number: 숫자
+    Date: 날짜
+    Buffer: 파일을 담을수 있는 버퍼
+    Boolean: true || false value
+    Mixed(Schema, Types, Mixed): 어떤 데이터도 넣을 수 있는 형식
+    ObjectId(Schema, Types, ObjectId): 객체 아이디, 주로 다른 객체를 참조 할 때 넣음
+    Array: 배열 형태의 값으로 []로 감싸서 사용
+  */
 
-    const post = { id: postId, title, body };
-    posts.push(post);
-    ctx.body = post;
+  // 좀더 복잡한 방식의 데이터도 저장 가능 ex
+  const Author = new Schema({
+    name: String,
+    email: String
+  });
+
+  const Book = new Schema({
+    title: String,
+    description: String,
+    authors: [Author],
+    meta: {
+      likes: Number
+    },
+    extra: Schema.Types.Mixed
+  });
+  // 이렇게 다른 스키마 내부에 스키마를 내장 가능
+```
+
+### 모델 생성
+```javascript
+  // src/models/post.js
+  (...)
+  module.exports = mongoose.model('Post', Post);
+
+  /*
+    모델 인스턴스를 만들고, module.exports로 내보내 줌
+    여기에서 사용한 model() 함수는 기본적으로 파라미터가 두 개 필요함.
+    첫 번째 파라미터는 스키마 이름이고,
+    두 번째 파라미터는 스키마 객체이다.
+    데이터베이스는 스키마 이름을 정해 주면 이름의 복수 형태로 데이터베이스에 컬렉션 이름을 만듬
+
+    예를 들어 스키마 이름을 Post로 설정하면 실제 데이터베이스에 만드는 컬렉션 일므은 posts이다.
+    BookInfo로 설정시 bookinfos로 만듬
+
+    MongoDB에서 컬렉션 이름을 만들 때 컨벤션은 구분자를 사용하지 않고, 복수 형태로 사용하는 것
+    이 컨번벤션을 따르고 싶지 않다면 세번째 파라미터에 컬렉션 이름을 설정하면 됨
+  */
+  mongoose.model('Post', Post, 'custom_book_collection');
+  // 모델을 만들 때 첫 번째 파라미터로 쓰는 이름은 나중에 다른 스키마에서 현재 스키마를 참조해야 하는 상황에서 사용함.
+```
+
+## MongoDB 클라이언트 설치
+```
+  스키마와 모델을 만들었다면 이번에는 이 모델을 사용하여 직접 데이터베이스에 데이터를 읽고 쓰기
+```
+
+### Robo 3T 설치
+```
+  MongoDB를 PC에 설치했다면 터미널에서 mongo 명령어를 입력하여 데이터베이스에 직접 접속해서 
+  데이터를 조회하고 변경 가능 하지만 mongo 명령어에 익숙하지 않은 상태라면 Robo 3T를 이용해 
+  MongoDB를 편하게 조회하고 변경가능하다.
+  https://robomonog.org/download 에서 운영체제에 맞게 설치 가능
+```
+
+## 데이터 생성과 조회
+```
+  데이터베이스를 연동해서 MongoDB 내부에 데이터를 등록해 보기
+```
+
+### NODE_PATH와 jsconfig.json
+```javascript
+  /*
+    상대경로로 설정한걸 절대 경로로 설정 바꾸기
+  */
+
+  // package.json - scripts
+  "scripts": {
+    "start": "NODE_PATH=src node src",
+    "start:dev": "NODE_PATH=src nodemon --watch src/ src/index.js"
   }
 
-  /*
-    포스트 목록 조회
-    GET /api/posts
-  */
-  exports.list = (ctx) => {
-    ctx.body = posts;
-  };
+  // window case:  yarn add --dev cross-env
+  "scripts": {
+    "start": "cross-env NODE_PATH=src node src",
+    "start:dev": "cross-env NODE_PATH=src nodemon --watch src/ src/index.js"
+  }
 
-  /*
-    특정 포스트 조회
-      GET /api/posts/:id
-  */
-  exports.read = (ctx) => {
-    const { id } = ctx.params;
-
-    // 주어진 id 값으로 포스트를 찾음
-    // 파라미터로 받아 온 값은 문자열 형식이니 파라미터를 숫자로 변환하거나,
-    // p.id 값을 문자열로 변경해야 함
-    const post = posts.find( p => p.id.toString() === id);
-
-    // 포스트가 없으면 오류를 반환
-    if (!post) {
-      ctx.status = 404;
-      ctx.body = {
-        message: '포스트가 존재하지 않습니다.'
-      };
-      return;
-    }
-
-    ctx.body = post;
-  };
-
-  /*
-    특정 포스트 제거
-    DELETE /api/posts/:id
-  */
-  exports.remove = (ctx) => {
-    const { id } = ctx.params;
-
-    // 해당 id를 가진 post가 몇 번째인지 확인
-    const index = posts.findIndex(p => p.id.toString() === id);
-
-    // 포스트가 없으면 오류를 반환
-    if (index === -1) {
-      ctx.status = 404;
-      ctx.body = {
-        message: '포스트가 존재하지 않습니다.'
-      };
-      return;
-
-      // index번째 아이템을 제거
-      posts.splice(index, 1);
-      ctx.status = 204; // No Content
-    };
-
-    /*
-      포스트 수정(교체)
-        PUT /api/posts/:id
-        { title, body }
-    */
-    exports.replace = (ctx) => {
-      // PUT 메서드는 전체 포스트 정보를 입력하여 데이터를 통째로 교체할 때 사용
-      const { id } = ctx.params;
-
-      // 해당 id를 가진 post가 몇 번쨰인지 확인 가능
-      const index = posts.findIndex(p => p.id.toString() === id);
-
-      // 포스트가 없으면 오류를 반환
-      if (index === -1) {
-        ctx.status = 404;
-        ctx.body = {
-          message: '포스트가 존재하지 않습니다.'
-        };
-        return;
-      }
-
-      // 전체 객체를 덮어 씌운다.
-      // 따라서 id를 제외한 기존 정보를 날리고, 객체를 새로 만듬
-      posts[index] = {
-        id,
-        ...ctx.request.body
-      };
-      ctx.body = posts[index];
-    };
-
-    /*
-      포스트 수정(특정 필드 변경)
-        PATCH /api/posts/:id
-        { title, body }
-    */
-
-    exports.update = (ctx) => {
-      // PATCH 메서드는 주어진 필드만 교체
-      const { id } = ctx.params;
-
-      // 해당 id를 가진 post가 몇 번째인지 확인 가능
-      const index = posts.findIndex( p => p.id.toString() === id);
-
-      // 포스트가 없으면 오류를 반환
-      if (index === -1) {
-        ctx.status = 404;
-        ctx.body = {
-          message: '포스트가 존재하지 않습니다.'
-        };
-        return;
-      }
-
-      // 기존 값에 정보를 덮어 씌움
-      posts[index] = {
-        ...posts[index],
-        ...ctx.request.body
-      };
-      ctx.body = posts[index];
-    };
-  };
-
-  // 내보낸 함수는 다음과 같이 로드하고 사용 가능
-  const moduleName = require('fileName');
-  moduleName.fileName();
-
-  // 즉, 방금 만든 posts.ctrl 파일을 불러오면 다음 객체가 로드됨
+  // jsconfig.json
   {
-    write: [Function],
-    list: [Function],
-    read: [Function],
-    remove: [Function],
-    replace: [Function],
-    update: [Function]
+    "compilerOptions": {
+      "baseUrl": "./src"
+    }
   }
-  // 이제 컨트롤러 함수들을 각 라우트에 연결하기
+
+  // .eslintrc.js
+  const path = require('path');
+
+  module.exports = {
+    "extends": "airbnb-base",
+    "settings": {
+      "import/resolver": {
+        node: { paths: [path.resolve('./src')] }
+      }
+    },
+    "rules": {
+      "no-unused-vars": 1,
+      "comma-dangle": 0,
+      "no-console": 0,
+      "eol-last": 0
+    }
+  };
+```
+
+### 데이터 생성
+```javascript
+  const Post = require('models/post');
+
+/*
+  POST /api/posts
+  { title, body, tags }
+*/
+exports.write = async (ctx) => {
+  const { title, body, tags } = ctx.request.body;
+  // 새 Post 인스턴스를 생성합니다.
+  const post = new Post({
+    title, body, tags
+  });
+  try {
+    await post.save(); // 데이터베이스에 등록합니다.
+    ctx.body = post; // 저장된 결과를 반환합니다.
+  } catch(e) {
+    // 데이터베이스의 오류 발생
+    ctx.throw(e, 500);
+  }
+}
+
+/*
+  GET /api/posts
+*/
+  // src/api/posts/posts.ctrl.js
+  const Post = require('model/post');
+
+  exports.write = (ctx) => {
+
+  };
+
+  exports.list = (ctx) => {
+
+  };
+
+  exports.read = (ctx) => {
+    
+  };
+
+  exports.remove = (ctx) => {
+
+  };
+
+  exports.update = (ctx) => {
+    
+  };
 
   // src/api/posts/index.js
   const Router = require('koa-router');
@@ -601,23 +445,7 @@
   posts.post('/', postsCtrl.write);
   posts.get('/:id', postsCtrl.read);
   posts.delete('/:id', postsCtrl.remove);
-  posts.put('/:id', postsCtrl.replace);
   posts.patch('/:id', postsCtrl.update);
 
   module.exports = posts;
-
-  /*
-    posts 라우터를 완성
-
-    list, read, remove를 제외한 API들은 요청할 때 Request Body가 필요
-    Postman에서 이 값을 어떻게 넣는지 확인하자
-  */
-```
-
-## 정리
-```
-  Koa를 사용하여 백엔드 서보를 만드는 기본 개념
-  REST API를 이해하고 어떻게 작동하는지, 자바스크립트의 배열을 사용하여 구현
-  다음 장에서는 MySQL, MongoDB 등 데이터베이스에 정보를 저장하여 관리
-  데이터베이스를 사용하면 다양하고 효율적인 방식으로 많은 양의 데이터를 읽고 쓸수 있음
 ```
