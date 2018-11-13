@@ -473,3 +473,35 @@
 
   Generate new component 메뉴를 선택해서 템플릿 만들기
 ```
+
+### 글로벌 스타일 및 스타일 유틸 설정
+```scss
+  /*
+    프로젝트의 폰트 및 전역적으로 사용되는 스타일 지정
+    styles 디렉토리에 base.scss 파일을 만들기
+  */
+
+  // src/styles/base.scss
+  /* body, 타이포그래피 등 기본 스타일 설정 */
+  @import url("//fonts.googlepis.com/earlyaccess/notosankr.css");
+  @import url("//cdn.jsdelivr.net/gh/velopert/font-d2coding@1.2.1/d2coding.css");
+
+  body {
+    margin: 0;
+    box-sizing: border-box;
+    font-family: "Noto Sans KR", san-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  // box-sizing 일괄 설정
+  * {
+    box-sizing: inherit;
+  }
+
+  // 링크 스타일 밑줄 및 색상 무효화
+  a {
+    text-decoration: inherit;
+    color: inherit;
+  }
+```
