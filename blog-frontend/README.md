@@ -505,3 +505,53 @@
     color: inherit;
   }
 ```
+
+### 스타일 유틸 설정
+```scss
+  /*
+    open-color: 색상 선택 용이
+    include-media: 반응형 디자인 적용 용이
+    yarn add open-color include-media
+  */
+  
+  // src/styles/lib/_all.scss
+  @import '~open-color/open-color';
+  @import '~include-media/dist/include-media';
+
+  // material-shadow: 그림자를 쉽게 서렁할수 있음
+  // src/styles/lib/_mixins.scss
+  // source: https://codepen.io/dbox/pen/RawBEW
+  @mixin material-shadow($z-depth: 1, $strength: 1, $color: black) {
+    @if $z-depth == 1 {
+      box-shadow: 0 1px 3px rgba($color, $strength * 0.14), 0 1px 2px rgba($color, $strength * 0.24);
+    }
+    @if $z-depth == 2 {
+      box-shadow: 0 3px 6px rgba($color, $strength * 0.16), 0 3px 6px rgba($color, $strength * 0.23);
+    }  
+    @if $z-depth == 3 {
+      box-shadow: 0 10px 20px rgba($color, $strength * 0.19), 0 6px 6px rgba($color, $strength * 0.23);
+    }    
+    @if $z-depth == 4 {
+      box-shadow: 0 15px 30px rgba($color, $strength * 0.25), 0 10px 10px rgba($color, $strength * 0.22);    
+    }
+    @if $z-depth == 5{
+      box-shadow: 0 20px 40px rgba($color, $strength * 0.30), 0 15px 12px rgba($color, $strength * 0.22);   
+    }
+    @if ($z-depth < 1) or ($z-depth > 5) {
+      @warn "$z-depth must be between 1 and 5";
+    }
+  }
+
+  // 믹스인을 작성한 후에는 이 파일을 styles/lib/_all.scss에서 불러오기
+  // src/styles/lib/_all.scss
+  @import '~open-color/open-color';
+  @import '~include-media/dist/include-media';
+  @import 'mixins';
+
+  // styles/utils.scss 파일을 만들어 작성한 것들을 불러오기, 추가로 반응형 디자인을 참조할 구간을 변수로 저장하기
+  // src/styles/utils.scss
+  @import 'lib/all';
+
+  $breakpoints(small: 320px, medium: 768px, large: 1024px, wide: 1400px);
+  // 반응형 디자인 화면 크기가 클때, 중간 크기일 때, 모바일 크기일 때에 따라 다른 스타일을 보여줌
+```
