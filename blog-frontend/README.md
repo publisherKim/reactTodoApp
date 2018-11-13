@@ -304,3 +304,109 @@
 
   export default Root;
 ```
+
+### 라우트 지정
+```javascript
+  /*
+    프로젝트에 필요한 라우트에서 사용할 페이지 컴포넌트 만들기
+    라우터는 총 6 종류
+      1. 홈
+      2. 포스트 목록
+      3. 포스트 목록(태그 설정)
+      4. 포스트 읽기
+      5. 에디터
+      6. 404 페이지
+  */
+
+  // src/pages/ListPage.js
+  import React from 'react';
+
+  const ListPage = () => {
+    return (
+      <div>
+        List
+      </div>
+    );
+  };
+
+  export default ListPage;
+
+  // src/pages/PostPage.js
+  import React from 'react';
+
+  const PostPage = () => {
+    return (
+      <div>
+        Post
+      </div>
+    );
+  };
+
+  export default PostPage;
+
+  // src/pages/EditorPage.js
+  import React from 'react';
+
+  const EditorPage = () => {
+    return (
+      <div>
+        Editor
+      </div>
+    );
+  };
+
+  export default EditorPage;
+
+  // src/pages/NotFoundPage.js
+  import React from 'react';
+
+  const NotFoundPage = () => {
+    return (
+      <div>
+        Not Found
+      </div>
+    );
+  };
+
+  export default NotFoundPage;
+
+  // src/pages/index.js
+  export { default as ListPage } from './ListPage';
+  export { default as PostPage } from './PostPage';
+  export { default as EditorPage } from './EditorPage';
+  export { default as NotFoundPage } from './NotFoundPage';
+
+  /*
+    이제 이 컴포넌트들을 불러와 App 컴포넌트에서 라우트를 적용하기
+  */
+
+  // src/components/App.js
+  import React from 'react';
+  import { Switch, Route } from 'react-router-dom';
+  import { ListPage, PostPage, EditorPage, NotFoundPage } from 'pages';
+
+  const App = () => {
+    return (
+      <div>
+        <switch>
+          <Route exact path="/" component={ListPage}></Route>
+          <Route exact path="/page/:page" component={ListPage}></Route>
+          <Route exact path="/tag/:tag/:page?" component={ListPage}></Route>
+          <Route exact path="/post/:id" component={PostPage}></Route>
+          <Route exact path="/editor" component={EditorPage}></Route>
+          <Route component={NotFoundPage}></Route>
+        </switch>
+      </div>
+    );
+  };
+
+  export default App;
+
+  /*
+    여기에서 사용한 리액트 라우터의 Switch 컴포넌트는 설정된 라우트 중에서 일치하는 라우트 하나만 보여줌
+    맨 아래쪽에 설정된 NotFoundPage에는 path를 지정하지 않았기 때문에 어떤 경우에도 렌더링이 됨
+    Switch로 감쌌으므로 먼저 매칭된 라우트 하나만 보여줌
+    따라서 ListPage, PostPage, EditorPage를 보여야 할 때는 렌더링 하지 않지만, 그 어떤 라우트에도 일치하지 
+    않을 경우 NotFoundPage를 보여 줌
+  */
+```
