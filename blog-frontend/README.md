@@ -145,3 +145,162 @@
     )
   }
 ```
+
+## 라우터와 리덕스 적용
+```
+  yarn add react-router-dom redux redux-actions react-redux redux-pender immutable
+```
+
+### 루트 컴포넌트 설정
+```javascript
+  /*
+    설치를 완료한 후 src/Root 컴포넌트 만들기
+    root 컴포넌트는 App 컴포넌트를 웹브라우저에서 사용하는 라우터인 BrowserRouter 컴포넌트 안에 감쌀 것
+    나중에 서버사이드 렌더링을 구현할 때는 서버 렌더링 전용 라우터인 StaticRoutter 컴포넌트에 App을 감싸서 사용
+  */
+  
+  // src/Root.js
+  import React from 'react';
+  import { BrowserRouter } from 'react-router-dom';
+  import App from 'components/App';
+
+  const Root = () => {
+    return (
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    )
+  }
+
+  export default Root;
+
+  /*
+    App 컴포넌트 만들기
+    그전에 컴포넌트를 불러올 때 경로를 절대 경로로 입력할 수 있도록 NODE_PATH를 설정
+    이전에는 package.json의 scripts 부분에서 설정했었던걸 .env 파일을 사용하게 변경
+  */
+
+  // .env
+  NODE_PATH=src
+
+  // src/components/App.js
+  import React from 'react';
+
+  const App = () => {
+    return (
+      <div>
+        BlogApp
+      </div>
+    )
+  };
+
+  export default App;
+
+  // index.js
+  import React from 'react';
+  import ReactDom from 'react-dom';
+  import Root from './Root';
+  import * as serviceWorker from './serviceWorker';
+
+  React.DOM.render(<Root />, document.getElementById('root'));
+
+  serviceWorker.register();
+```
+
+### 리덕스 설정
+```javascript
+  /*
+    리덕스를 설정하려면 프로젝트에서 필요한 모듈들을 먼저 만들어야 함
+    이 프로젝트에 필요한 리덕스 모듈은 모두 네 종류
+
+    base: 로그인 상태, 삭제 및 로그인할 때 보이는 모달 상태를 다룸
+    editor: 마크다운 에디터 상태를 다룸
+    list: 포스트 목록 상태를 다룸
+    post: 단일 포스트 상태를 다룸
+
+    이 모듈들의 세부 코드는 나중에 작성함.
+    지금은 store 디렉터리에 modules 디렉터리를 만들고 base.js, editor.js, list.js, post.js
+    파일들을 내부에 생성하여 동일한 내용으로 코드를 작성
+  */
+
+  // src/store/modules/base.js, editor.js, list.js, post.js
+  import { createAction, handleActions } from 'redux-actions';
+
+  import { Map } from 'immutable';
+  import { pender } from 'redux-pender';
+
+  // action types
+
+  // action creators
+
+  // initial state
+  const initialState = Map({});
+
+  // reducer
+  export default handleActions({
+
+  }, initialState);
+
+  /*
+    다음으로 이 모듈을 전부 불러와 내볼낼 인덱스 파일을 만듬
+    이 과정에서 비동기 액션을 관리하는 redux-pender의 penderReducer도 불러와 내보내기
+  */
+
+  // src/store/modules/index.js
+  export { default as editor } from './editor';
+  export { default as list } from './list';
+  export { default as post } from './post';
+  export { default as base } from './base';
+  export { penderReducer as pender } from 'redux-pender';
+
+  /*
+    리덕스 모듈을 준비했으니 configure.js 파일을 만들어 스토어를 생성하는 함수인 configure를 구현
+    함수를 따로 만드는 이유는 스토어를 크라이언트에서 생성하지만, 추후 서버사이드 렌더링을 할 때 서버에서도 호출해야 하기 때문
+
+    방금 만든 모듈을 combineReducers로 합쳐 주고, penderMiddleware도 적용하고
+    개발 환경에서는 Redux Devtiiks를 사용하도록 설정
+  */
+  // src/store/configure.js
+  import { createStore, applyMiddleware, compose, comibneReducers } from 'redux';
+  import penderMiddleware from 'redux-pender';
+  import * as modules from './modules';
+
+  const reducers = combineeducers(modules);
+  const middlewares = [penderMiddleware()];
+
+  // 개발 모드일 때만 Redux Devtools를 적용
+  const isDev = process.env.NODE_ENV === 'development';
+  const devtools = isDev && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__;
+  const comoseEnhancers = devtools || compose;
+
+  // perloadedState는 추후 서버사이드 렌더링을 했을 때 전달받는 초기 상태
+  const configure = (preloadedState) => createStore(reducers, preloadedState, composeEnhancers(applyMiddleware(...middlewares)));
+
+  export default configure;
+
+  /*
+    스토어 생성 준비 끝
+    Root 컴포넌트에서 configure 함수를 호출하여 스토어를 생성하고, Provider 컴포넌트로 BrowserRouter를 감싼다.
+  */
+
+  // src/Root.js
+  import React from 'react';
+  import { BrowserRouter } from 'react-router-dom';
+  import App from 'components/App';
+  import { Provider } from 'react-redux';
+  import configure from 'store/configure';
+
+  const store = configure();
+
+  const Root = () => {
+    return (
+      <Provider store={store}>
+        <BrowserRouter>
+          <App></App>
+        </BrowserRouter>
+      </Provider>
+    );
+  };
+
+  export default Root;
+```
