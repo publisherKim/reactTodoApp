@@ -554,4 +554,109 @@
 
   $breakpoints(small: 320px, medium: 768px, large: 1024px, wide: 1400px);
   // 반응형 디자인 화면 크기가 클때, 중간 크기일 때, 모바일 크기일 때에 따라 다른 스타일을 보여줌
+
+  /*
+    색상 팔레트는 https://yeun.github.io/open-color/ 확인 가능
+    앞으로 컴포넌트 스타일을 작성할 때  유틸에 적용한 코드를 사용하려면
+    스타일 파일 위쪽에 다음 코드를 삽입해야 함
+  */
+  @import 'utils';
+```
+
+### Header 컴포넌트 생성
+```javascript
+  // src/components/common/Header/Header.js
+  import React from 'react';
+  import styles from './Header.scss';
+  import classNames from 'classnames/bind';
+  import { link } from 'react-router-dom';
+
+  const cx = classNames.bind(styles);
+
+  const Header = () => (
+    <header className={cx('header')}>
+      <div className={cx('header-content')}>
+        <div className={cx('brand')}>
+          <Link to="/">reactblog</Link>
+        </div>
+        <div className={cx('right')}>
+          {/* 조건에 따라 버튼 렌더링 */}
+          오른쪽
+        </div>
+      </div>
+    </header>
+  );
+
+  export default Header;
+```
+
+```scss
+  // src/components/common/Header/Header.scss
+  @import 'utils';
+
+  .header {
+    background: $oc-blue-6;
+      .header-content {
+        height: 5rem;
+        width: 1400px;
+        margin: 0 auto;
+        padding-left: 3rem;
+        padding-right: 3rem;
+
+        // 내부 아이템 세로 가운데 정렬
+        display: flex;
+        align-items: center;
+
+        // 반응형 레이아웃
+        @include media("<wide") {
+          width: 100%;
+        }
+        @include media("<medium") {
+          padding-left: 1rem;
+          padding-right: 1rem;
+        }
+
+        .brand {
+          // logo
+          colo: white;
+          font-size: 1.5rem;
+          font-weight: 600;
+        }
+
+        .right {
+          // 오른쪽 내용
+          margin-left: auto;
+        }
+      }
+  }
+```
+
+```javascript
+  // src/components/common/PageTemplate/PageTemplate.js
+  import React from 'react';
+  import styles from './PageTemplate.scss';
+  import classNames from 'classnames/bind';
+  import Header from 'components/common/Header';
+
+  const cx = classNames.bind(styles);
+
+  const PageTemplate = () => (
+    <div className={cx('page-template')}>
+      <header></header>
+    </div>
+  );
+
+  // src/pages/ListPage.js
+  import React from 'react';
+  import PageTemplate from 'components/common/PageTemplate';
+
+  const ListPage = () => {
+    return (
+      <PageTemplate>
+        List
+      </PageTemplate>
+    );
+  };
+  
+  export default ListPage;
 ```
