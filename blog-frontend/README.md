@@ -569,7 +569,7 @@
   import React from 'react';
   import styles from './Header.scss';
   import classNames from 'classnames/bind';
-  import { link } from 'react-router-dom';
+  import { Link } from 'react-router-dom';
 
   const cx = classNames.bind(styles);
 
