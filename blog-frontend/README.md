@@ -47,3 +47,101 @@
 ```
   기본 구조로 잡힌 불필요한 파일인 App.css, App.js, App.test.js, index.css, logo.svg를 제거한다.
 ```
+### Sass 및 CSS 모듈 적용
+```javascript
+  /*
+    config file: yarn eject
+    yarn add node-sass sass-loader classnames
+  */
+  
+  // config/paths.js 
+  module.exports = {
+    dotenv: resolveApp('.env'),
+    appBuild: resolveApp('build'),
+    appPublic: resloveApp('public'),
+    appHtml: resolveApp('public/index.html'),
+    appIndexJs: resolveApp('src/index.js'),
+    appPackageJson: resolveApp('package.json'),
+    appSrc: resolveApp('src'),
+    yarnLockFile: resolveApp('yarn.lock'),
+    testSetup: resolveApp('src/setupTests.js'),
+    appNodeModules: resolveApp('node_modules'),
+    publicUrl: getPublicUrl(resolveApp('package.json')),
+    servedPath: getServedPath(resolveApp('package.json')),
+    globalStyles: resolveApp('src/styles')
+  };
+
+  // config/webpack.config.dev.js - sass-loader 설정
+  {
+    test: /\.css$/,
+    (...)
+  },
+  {
+    test: /\.scss$/,
+    use: [
+      require.resolve('style-loader'),
+      {
+        loader: require.resolve('css-loader'),
+        options: {
+          importLoaders: 1,
+          localIdentName: '[name]__[local]___[hash:base64:5]',
+          modules: 1,
+        },
+      },
+      {
+        loader: require.resolve('postcss-loader'),
+        options: {
+          (...)
+        },
+      },
+      {
+        loader: require.resolve('sass-loader'),
+        options: {
+          includePaths: [paths.globalStyles]
+        }
+      }
+    ],
+  },
+  // css-loader 옵션을 변경하고, 배열이 끝나기 전에 sass-loader를 설정, globalStyles를 includePaths로 설정 하면 스타일 설정 끝
+
+  // config/webpack.config.prod.js - sass-loader 설정
+  {
+    test: /\.css$/,
+    (...)
+  },
+  {
+    test: /\.scss$/,
+    loader: ExtractTextPlugin.extract(
+      Object.assign(
+        {
+          fallback: require.resolve('style-loader'),
+          use: [
+            {
+              loader: require.resolve('css-loader'),
+              options: {
+                importLoaders: 1,
+                minimize: true,
+                sourceMap: shouldUseSourceMap,
+                localIdentName: '[name]__[local]___[hash:base64:5]',
+                modules: 1,
+              },
+            },
+            {
+              loader: require.resolve('postcss-loader'),
+              options: {
+                (...)
+              }
+            },
+            {
+              loader: require.resolve('sass-loader'),
+              options: {
+                includePaths: [paths.globalStyles]
+              }
+            },
+          ]
+        },
+        extractTextPluginOptions
+      )
+    )
+  }
+```
