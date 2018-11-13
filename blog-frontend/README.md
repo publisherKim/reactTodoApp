@@ -410,3 +410,66 @@
     않을 경우 NotFoundPage를 보여 줌
   */
 ```
+
+## 기본 유저 인터페이스 생성
+```
+  프로젝트의 구조 잡기가 끝났으니 이번에는 기본 유저 인터페이스를 구성해 보자.
+```
+
+### PageTemplate, Header, Footer 컴포넌트 생성
+
+### 컴포넌트 생성
+```javascript
+  /*
+    유저 인터페이스 컴포넌트 만들기
+    컴포넌트는 종류별로 디렉터리를 나누어 만듬
+    Sass와 CSS 모듈을 사용하므로 각 컴포넌트마다 디렉토리를 하나씩 만듬
+
+    컴포넌츠 디렉토리애 커몬 디렉터리를 만듬
+    커먼 디렉터리에는 페이지 두 개 이상에서 사용하는 컴포넌트들을 넣기
+
+    common 내부에 PageTemplate 디렉터리를 만들고, 다음 파일들을 생성
+  */
+  
+  // src/components/common/PageTemplate/PageTemplate.scss
+  .page-Template {
+
+  }
+
+  // src/components/common/PageTemplate/PageTemplate.js
+  import React from 'react';
+  import styles from './PageTemplate.scss';
+  import classNames from 'classnames/bind';
+
+  const cx = classNames.bind(styles);
+
+  const PageTemplate = () => (
+    <div className={cx('page-template')}>
+      PageTemplate
+    </div>
+  );
+
+  export default PageTemplate;
+
+  // src/components/common/PageTemplate/index.js
+  export { default } from './PageTemplate';
+
+  // VS Code의 generate-react-component를 사용하는 것
+```
+
+### VSCODE generate-react-component
+```
+  plugin: generate-react-component 설치
+  template 내려 받기
+  git clone https://github.com/vlpt-playground/react-sass-component-template.git
+  cd react-sass-component-template
+  pwd(경로 확인)
+
+  vscode 기본설정 세팅하기
+  {
+    "generate-react-component.componentTemplatePath":
+    "C:\study\chapter10\react-sass-component-template"
+  }
+
+  Generate new component 메뉴를 선택해서 템플릿 만들기
+```
