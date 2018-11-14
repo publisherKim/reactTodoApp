@@ -1633,3 +1633,120 @@
 
   export default EditorPage;
 ```
+
+### EditorPane 컴포넌트 생성
+```javascript
+  /*
+    EditorPane 컴포넌트의 인풋은 총 세개
+      - 제목 
+      - 내용
+      - 태그
+    
+    내용은 CodeMirror 라이브러리를 연동하혀 구현 하므로 추후 구현
+  */
+  // src/components/editor/EditorPane/EditorPane.js
+  import React, { Component } from 'react';
+  import styles from './EditorPane.scss';
+  import classNames from 'classnames/bind';
+
+  const cx = classNames.bind(styles);
+
+  class EditorPane extends Component {
+    render() {
+      return (
+        <div className={cx('editor-pane')}>
+          <input className={cx('title')} palceholder="제목을 입력하세요" name="title" />
+          <div className={cx('code-editor')}></div>
+          <div className={cx('tags')}>
+            <div className={cx('description')}>태그</div>
+            <input name="tags" palceholder="태그를 입력하세요 (쉼표로 구분)" />
+          </div>
+        </div>
+      );
+    }
+  }
+
+  export default EditorPane;
+```
+```scss
+  @import 'utils';
+
+  .editor-pane {
+    flex: 1; // 자신에게 주어진 영역을 다 채우기
+    // 세로 방향으로 내용 나열
+    display: flex;
+    flex-direction: column;
+
+    .title {
+      background: $oc-gray-7;
+      border: none;
+      outline: none;
+      font-size: 1.5rem;
+      padding: 1rem;
+      color: white;
+      font-weight: 500;
+      &::placeholder {
+        color: rgba(255,255,255,0.75);
+      }
+    }
+
+    .code-editor {
+      flex: 1; // 남는 영역 다 차지하기
+      background: $oc-gray-9;
+      display: flex;
+      flex-direction: column; // .CodeMirror가 세로 영역을 전부 차지
+      :global .CodeMirror {
+        font-size: 1rem;
+        flex: 1;
+        font-family: 'D2 Coding';
+      }
+    }
+
+    .tags {
+      padding-left: 1rem;
+      padding-right: 1rem;
+      height: 2rem;
+      background: $oc-gray-7;
+      display: flex;
+      align-items: center;
+      .description {
+        font-size: 0.85rem;
+        color: white;
+        font-weight: 600;
+        margin-right: 1rem;
+      }
+
+      input {
+        font-size: 0.85rem;
+        border: none;
+        flex: 1;
+        background: none;
+        outline: none;
+        font-weight: 600;
+        color: rgba(255,255,255,0.9);
+        &::placeholder {
+          color: rgba(255,255,255,0.75);
+        }
+      }
+    }
+  }
+```
+```javascript
+  // src/pages/EditorPage.js
+  import React from 'react';
+  import EditorTemplate from 'components/editor/EditorTemplate';
+  import EditorHeader from 'components/editor/EditorHeader';
+  import EditorPane from 'components/editor/EditorPane';
+
+  const EditorPage = () => {
+    return (
+      <EditorTemplate
+        header={<EditorHeader/>}
+        editor={<EditorPane/>}
+        preview="프리뷰"
+      ></EditorTemplate>
+    );  
+  };
+
+  export default EditorPage;  
+```
