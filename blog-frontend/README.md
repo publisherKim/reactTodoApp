@@ -1363,3 +1363,208 @@
 
   export default PostPage;
 ```
+
+## Editor 페이지 UI 구현
+```
+  Editor 페이지는 기존에 만들었던 List와 Post 페이지와는 달리 PageTemplate를 사용하지 않음
+    - 뒤로가기
+    - 작성하기
+    - 화면 분활 가운데영역 드래그 리사이징
+    - 마크다운 작성 가능
+    - CodeMirror: 텍스트에 색상 입혀주기
+    - Marked와 Primjs 라이브러리를 사용하여 마크다운을 HTML 형태로 변환 시켜주고 코드에 색상을 줌
+
+  먼저 에디터 페이지의 레이아웃과 리사이즈 기능만 구현
+  Generate new component
+    - EditorHeader: 에디터 위쪽 영역(뒤로가기, 작성하기)
+    - EditorTemplate: 에디터 페이지를 위한 템플릿(리사이즈)
+    - EditorPane: 글을 작성하는 영역
+    - PreviewPane: 마크다운이 HTML로 렌더링 되는 영역
+
+  EditorTmplate와 EditorPane은 상태관리가 필요한 컴포넌트이니, 컴포넌트를 만들떄 클래스형으로 생성
+```
+
+### Editor Template 컴포넌트
+```javascript
+  /*
+    EditorTemplate 컴포넌트는 지금까지 다른 컴포넌트 들과 다름
+    기존에는 컴포넌트의 props로 JSX 형태를 받아 올 때 children 값을 사용
+  */
+  import React from 'react';
+
+  const Parent = ({children}) => {
+    return (
+      <div>
+        {children}
+      </div>
+    );
+  };
+
+  export default Parent;
+
+  // 이렇게 사용하면 JSX 태그 사이의 내용드이 childen 으로 전달됨
+  <Parent>
+    <div>Hello World</div>
+  </Parent>
+
+  /*
+    하지만 지금 블로그 프로젝트에는 children처럼 JSX 형태로 전달받아 사용할 내용이 세 종류나 됨
+    세 종류의 JSX가 블록 형태 하나로 붙어 있는 것이 아니라, 각자 다른 곳에 렌더링해야 하므로 
+    children을 사용하지 않고 header, editor, preview라는 props를 받아 알맞은 곳에 렌더링 해줌
+  */
+  header={<EditorHeder/>}
+  editor={<EditorPane/>}
+  preview={<PreviewPane/>}
+
+  // src/components/editor/EditorTemplate/EditorTemplate.js
+  import React, { Component } from 'react';
+  import styles from './EditorTemplate.scss';
+  import classNames from 'classnames/bind';
+
+  const cx = classNames.bind(styles);
+
+  class EditorTemplate extends Component {
+    render() {
+      const { header, editor, preview } = this.props;
+      return (
+        <div className={cx('editor-template')}>
+          {header}
+          <div className={cx('panes')}>
+            <div className={cx('pane', 'editor')}>
+              {editor}
+            </div>
+            <div className={cx('pane', 'preview')}>
+              {preview}
+            </div>
+          </div>
+        </div>
+      );
+    }
+  }
+
+  export default EditorTemplate;
+```
+```scss
+  @import 'utils';
+
+  .editor-template {
+    .panes {
+      height: calc(100vh - 4rem); // 페이지 높이에서 EditorHeader 크기 빼기
+      display: flex;
+      position: relative; // separator의 위치 설정을 위하여 relative로 설정
+      .pane {
+        display: flex;
+        min-width: 0; // 내부의 내용이 커도 반대편 영역을 침범하지 않게 해줍니다.
+        overflow: auto; // 너무 많이 줄이면 스크롤바가 나타나게 해줍니다.
+      }
+      .separator {
+        width: 1rem; // 클릭 영역을 넓게 설정하기 위함입니다.
+        height: 100%;
+        position: absolute;
+        transform: translate(-50%); // 자신의 50%만큼 왼쪽으로 이동
+        cursor: col-resize; // 리사이즈 커서
+      }
+      @include media("<medium") {
+        .editor {
+          flex: 1!important;
+        }
+        .preview, .separator {
+          display: none;
+        }
+      }
+    }
+  }
+```
+```javascript
+  import React from 'react';
+  import EditorTemplate from 'components/editor/EditorTemplate';
+
+  const EditorPage = () => {
+    return (
+      <EditorTemplate
+        header="헤더"
+        editor="에디터"
+        preview="프리뷰"
+      >
+      </EditorTemplate>
+    );
+  };
+```
+
+### 리사이즈 기능 구현
+```javascript
+  /*
+    각 영역 사이에 separator를 렌더링한 후, 이 DOM을 클릭할 때 이벤트를 등록
+    커서 위치에 따라 state를 변경하고, 이 state에 따라 각 영역의 크기를 변경하여 리렌더링 하도록 설정
+  */
+  import React, { Component } from 'react';
+  import styles from './EditorTemplate.scss';
+  import classNames from 'classnames/bind';
+
+  const cx = classNames.bind(styles);
+
+  class EditorTemplate extends Component {
+    state = {
+      leftPercentage: 0.5
+    }
+
+    // sepatator를 클릭 후 마우스를 움직이면 그에 따라 leftPercentage 업데이트
+    handleMouseMove = (e) => {
+      this.setState({
+        leftPercentage: e.clientX / window.innerWidth
+      });
+    };
+
+    // 마우스를 뗐을 때 등록한 이벤트 제거
+    handleMouseUp = (e) => {
+      document.body.removeEventListener('mousemove', this.handleMouseMove);
+      window.removeEventListener('mouseup', this.handleMouseUp);
+    };
+
+    // separator 클릭할 때
+    handleSeparatorMouseDown = (e) => {
+      document.body.addEventListener('mousemove', this.handleMouseMove);
+      widnow.addEventListener('mouseup', this.handleMouseUp);
+    };
+
+    render() {
+      const { header, editor, preview } = this.props;
+      const { leftPercentage } = this.state;
+      const { handleSeparatorMouseDown } = this;
+
+      // 각 영역에 flex 값 적용
+      const leftStyle = {
+        flex: leftPercentage
+      };
+      const rightStyle = {
+        flex: 1 - leftPercentage
+      };
+
+      // separator 위치 설정
+      const separatorStyle = {
+        left: `${leftPercentage * 100}%`
+      };
+
+      return (
+        <div className={cx('editor-template')}>
+          {header}
+          <div className={cx('panes')}>
+            <div className={cx('pane', 'editor')} style={leftStyle}>
+              {editor}
+            </div>
+            <div className={cx('pane', 'preview')} style={rightStyle}>
+              {preview}
+            </div>
+            <div
+              className={cx('separator')}
+              style={separatorStyle}
+              onMouseDown={handleSeparatorMouseDown}
+            ></div>
+          </div>
+        </div>
+      );
+    }
+  }
+
+  export default EditorTemplate;
+```
