@@ -660,3 +660,706 @@
   
   export default ListPage;
 ```
+
+### Footer 컴포넌트 생성
+```javascript
+  /*
+    처음에는 별도의 인증없이 포스트 작성, 수정 삭제 가능
+    후반에는 간단한 비밀번호 인증을 구현
+      - 로그인
+      - 로그아웃
+  */
+
+  // src/components/common/Footer/Footer.js
+  import React from 'react';
+  import styles from './Footer.scss';
+  import classNames from 'classnames/bind';
+  import { Link } from 'react-router-dom';
+
+  const cx = classNames.bind(styles);
+
+  const footer = () => (
+    <footer className={cx('footer')}>
+      <Link to="/" className={cx('brand')}>reactblog</Link>
+      <div className={cx('admin-login')}>관리자 로그인</div>
+    </footer>
+  );
+
+  export default Footer;
+```
+```scss
+  // 푸터 스타일링
+  // src/components/common/Footer/Footer.scss
+  @import 'utils';
+
+  .footer {
+    background: $oc-gray-7;
+    height: 10rem;
+
+    // 내부 내용 가운데 정렬
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column; // 위에서 아래로
+
+    .brand {
+      // 로고
+      color: white;
+      font-size: 2rem;
+      font-weight: 600;
+    }
+
+    .admin-login {
+      // 로그인 버튼
+      margin-top: 0.5rem;
+      font-weight: 600;
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.8);
+      cursor: pointer;
+      &:hover {
+        color: white;
+      }
+    }
+  }
+```
+```javascript
+  // PageTemplate에서 렌더링 하기
+  // src/components/common/PageTemplate/PageTemplate.js
+  import React from 'react';
+  import styles from './PageTemplate.scss';
+  import classNames from 'classnames/bind';
+  import Header from 'components/common/Header';
+  import Footer from 'components/common/Footer';
+
+  const cx = classNames.bind(styles);
+
+  const PageTemplate = () => (
+    <div className={cx('page-template')}>
+      <Header></Header>
+      <Footer></Footer>
+    </div>
+  );
+
+  export default PageTemplate;
+```
+
+### PageTemplate 중간 영역 설정
+```javascript
+  /*
+    PagetTemplate에서 Header와 Footer 사이, 즉 중간 영역의 배경색을 회색으로 지정하고,
+    Footer가 언제나 페이지 아래쪽에 위치하도록 중간 영역의 최소 높이를 설정
+  */
+  // src/components/common/PageTemplate/PageTemplate.js
+  import React from 'react';
+  import styles from './PageTemplate.scss';
+  import classNames from 'classnames/bind';
+  import Header from 'components/common/Header';
+  import Footer from 'components/common/Footer';
+
+  const cx = classNames.bind(styles);
+
+  const PageTemplate = ({children}) => (
+    <div className={cx('page-template')}>
+      <Header></Header>
+      <main>
+        {children}
+      </main>
+      <Footer></Footer>
+    </div>
+  );
+
+  export default PageTemplate;  
+```
+
+### 버튼 생성
+```javascript
+  /*
+    to 값을 props로 전달했을 때는 Link 컴포넌트를 사용하고, to 값이 없을 때는 div 태그를 사용한다.
+    theme props를 받아서, 이에 따라 다른 스타일을 설정
+    Generate new component
+  */
+
+  // src/components/common/Button/Button.js
+  import React from 'react';
+  import styles from './Button.scss';
+  import classNames from 'classnames/bind';
+  import { Link } from 'react-router-dom';
+
+  const cx = classNames.bind(styles);
+
+  // 전달받은 className, onClick 등 값들이 rest 안에 들어 있음
+  // JSX에서 ...을 사용하면 내부에 있는 값들을 props로 넣어 줌
+  const Div = ({children, ...rest}) => <div {...rest}>{children}</div>;
+
+  const Button = ({
+    children, to, onClick, disabled, theme = 'default',
+  }) => {
+    // to 값이 존재하면 Link를 사용하고, 그렇지 않으면 div를 사용
+    // 비활성화되어 있는 버튼일 때도 div를 사용
+    const Element = ( to && !disabled ) ? Link : Div;
+
+    // 비활성화하면 onClick은 실행되지 않음
+    // disabled 값이 true가 되면 className에 disabled를 추가함
+    return (
+      <Element
+        to={to}
+        className={cx('button', theme, {disabled})}
+        onClick={disabled ? () => null : onClick}
+      >
+        {children}
+      </Element>
+    );
+  }
+
+  export default Button;
+  /*
+    버튼에 옵션이 많은 이유 기능이 비슷한 컴포넌트를 여러 개 만드는 것보다 
+    재사용 가능한 컴포넌트를 만드는게 좋다.
+  */
+```
+```scss
+  /*
+    버튼 테마 
+      - default
+      - outline
+      - gray
+    비활성화시: disbled 클래스 적용
+  */
+  @import 'utils';
+
+  .button {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: white;
+    cursor: pointer;
+    user-select: none;  // 드래그 방지
+    display: inline-flex;
+
+    // default: 파란색 버튼
+    &.default {
+      background: $oc-blue-6;
+      &:hover {
+        background: $oc-blue-5;
+      }
+      &:active {
+        background: $oc-blue-6;
+      }
+    }
+
+    // gray: 회색 버튼
+    &.gray {
+      background: $oc-gray-7;
+      &:hover {
+        background: $oc-gray-6;
+      }
+      &:active {
+        background: $oc-blue-7;
+      }
+    }
+
+    // outline: 횐색 테두리 버튼
+    &.outline {
+      border: 2px solid white;
+      border-radius: 2px;
+      &:hover {
+        background: white;
+        color: $oc-blue-6;
+      }
+      &:active {
+        background: rgba(255, 255, 255, 0.85);
+        border: 2px solid rgba(255, 255, 255, 0.85);
+      }
+    }
+
+    &:hover {
+      @include material-shadow(2, 0.5); // 마우스 커서가 위에 있으면 그림자 생성
+    }
+
+    // 비활성화된 버튼
+    &.disabled {
+      background: $oc-gray-4;
+      color: $oc-gray-6;
+      cursor: default;
+      &:hover, &:active {
+        box-shadow: none;
+        background: $oc-gray-4;
+      }
+    }
+
+    // 버튼 두 개 이상이 함께 있다면 중간 여백
+    & + & {
+      margin-left: 0.5rem;
+    }
+  }
+```
+```javascript
+  // 버튼 렌더링 하기
+  // src/components/common/Header/Header.js
+  import React from 'react';
+  import styles from './Header.scss';
+  import classNames from 'classnames/bind';
+  import { Link } from 'react-router-dom';
+  import Button from 'components/common/Header/Header.js';
+
+  const cx = classNames.bind(styles);
+
+  const Header = () => (
+    <header className={cx('header')}>
+      <div className={cx('header-content')}>
+        <div className={cx('brand')}>
+          <Link to="/">reactblog</Link>
+        </div>
+        <div className={cx('right')}>
+          <Button theme="outline" to="/editor">새 포스트</Button>
+        </div>
+      </div>
+    </header>
+  );
+
+  export default Header;
+```
+
+## PostList 페이지 UI 구현
+```
+  PostList 페이지에 필요한 유저 인터페이스 구현
+  포스트 목록과 관련된 컴포넌트들을 사용
+  공용으로 쓰던 컴포넌트를 common 디렉토리에 넣었던 것처럼
+  PostList에서 보이는 컴포넌트들을 list 디렉터리에 만들기
+
+  components 디렉터리에 list 디렉터리를 만들고,
+  내부에는 Generate new component 메뉴를 사용하여 다음 컴포넌트 만들기
+    - ListWrapper: 페이지 내부의 컴포넌트들을 감싸 줌
+    - Pagination: 다음 -> 이전 페이지로 이동
+    - PostList: 포스트 목록을 보여 줌
+```
+
+### ListWrapper 컴포넌트
+```javascript
+  /*
+    ListWrapper 컴포넌트는 내부 내용을 페이지 한가운데에 정렬시켜 주고,
+    위아래에 패딩이 설정되어 있으며, 웹브라우저 크기에 따라 화면 크기를 조정
+    컴포넌트들 감싸는 역활을 하므로, 내부에 children을 렌더링 한다.
+  */
+  // src/components/list/ListWrapper/ListWrapper.js
+  import React from 'react';
+  import styles from './ListWrapper.scss';
+  import classNames from 'classnames/bind';
+
+  const cx = classNames.bind(styles);
+
+  const ListWrapper = ({children}) => (
+    <div className={cx('list-wrapper')}>
+      {children}
+    </div>
+  );
+
+  export default ListWrapper;
+```
+```scss
+  @import 'utils';
+
+  .list-wrapper {
+    width: 1024px;
+    margin: 0 auto;
+
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+
+    @include media("<wide") {
+      width: 768px;
+    }
+    @include media("<large") {
+      width: 512px;
+    }
+    @include media("<medium") {
+      width: 100%;
+    }
+  }
+```
+```javascript
+  // ListPage에 렌더링하기
+  // src/pages/ListPage.js
+  import React from 'react';
+  import PageTemplate from 'components/common/PageTemplate';
+  import ListWrapper from 'components/list/ListWrapper';
+
+  const ListPage = () => {
+    return (
+      <PageTemplate>
+        <ListWrapper>
+          리스트
+        </ListWrapper>
+      </PageTemplate>
+    );
+  };
+
+  export default ListPage;
+```
+
+### PostList 컴포넌트 생성
+```javascript
+  /*
+    블로그 포스트 목록 데이터를 받아 와 이를 렌더링
+
+    PostList 내부에 PostItem 컴포넌트를 만들고, 이를 반복적으로 렌더링
+    아직 데이터가 없으므로 더미 데이터를 활용
+  */
+  // src/components/list/PosstList/PostList.js
+  import React from 'react';
+  import styles from './PostList.scss';
+  import classNames from 'classnames/bind';
+  import { Link } from 'react-router-dom';
+
+  const cx = classNames.bind(styles);
+
+  const PostItem = () => {
+    return (
+      <div className={cx('post-item')}>
+        <h2><a>타이틀</a></h2>
+        <div className={cx('date')}>2017-10-24</div>
+        <p>내용</p>
+        <div className={cx('tags')}>
+          <a>#태그</a>
+          <a>#태그</a>
+          <a>#태그</a>
+        </div>
+      </div>
+    )
+  }
+  const PostList = () => (
+    <div className={cx('post-list')}>
+      <PostItem></PostItem>
+      <PostItem></PostItem>
+      <PostItem></PostItem>
+      <PostItem></PostItem>
+    </div>
+  );
+
+  export default PostList;
+```
+```scss
+  // src/components/list/PostList/PlstList.scss
+  @import 'utils';
+
+  .post-list {
+    .post-item {
+      padding: 1.5rem;
+      transition: all .15s ease-in;
+      h2 {
+        font-size: 2rem;
+        font-weight: 400;
+        margin: 0;
+        color: $oc-gray-8;
+        a {
+          transition: all .15s ease-in; // 스타일 바뀔 때 애니메이션 효과
+          border-bottom: 1px solid transparent;
+        }
+        a:hover {
+          color: $oc-blue-6;
+          // 마우스 호버 시 밑줄(밑줄과 글자 사이 여백, 얇은 밑줄을 위해 border-bottom 사용)
+          border-bottom: 1px solid $oc-blue-6; 
+        }
+      }
+      .date {
+        font-size: 0.85rem;
+        color: $oc-gray-5;
+      }
+      p {
+        font-weight: 300;
+        color: $oc-gray-7;
+      }
+      .tags {
+        font-size: 0.85rem;
+        color: $oc-blue-6;
+        a {
+          &:hover {
+            color: $oc-blue-5;
+            text-decoration: underline;
+          }
+        }
+        a + a { // 태그 사이 여백
+          margin-left: 0.25rem;
+        }
+      }
+      &:hover {
+        // 호버 시 배경색 변경
+        background: rgba($oc-blue-6, 0.05);
+      }
+    }
+    .post-item + .post-item { // 아이템 사이 여백
+      border-top: 1px solid $oc-gray-3;
+    }
+  }
+```
+```javascript
+  //src/pages/ListPage.js
+  import React from 'react';
+  import PageTemplate from 'components/common/PageTemplate';
+  import ListWrapper from 'components/list/ListWrapper';
+  import PostList from 'components/list/PostList';
+
+  const ListPage = () => {
+    return (
+      <PageTemplate>
+        <ListWrapper>
+          <PostList></PostList>
+        </ListWrapper>
+      </PageTemplate>
+    );
+  };
+
+  export default ListPage;
+```
+
+### Pagination 컴포넌트 생성
+```javascript
+  // ListPage에 존재하는 마지막 컴포넌트인 Pagination 만들기
+  // src/components/list/Pagination/Pagination.js
+  import React from 'react';
+  import styles from './Pagination.scss';
+  import classNames from 'classnames/bind';
+  import Button from 'components/common/Button';
+
+  const cx = classNames.bind(styles);
+
+  const Pagination = () => (
+    <div classNmae={cx('pagination')}>
+      <Button disabled>
+        이전 페이지
+      </Button>
+      <div className={cx('number')}>
+        페이지 1
+      </div>
+      <Button>
+        다음 페이지
+      </Button>
+    </div>
+  );
+
+  export default Pagination;
+```
+```scss
+  // src/list/Pagination/Pagination.scss
+  @import 'utils';
+  .pagination {
+    margin-top: 2rem;
+
+    display: flex;
+    align-items: center;
+
+    .number {
+      font-size: 0.85rem;
+      text-align: center;
+      color: $oc-gray-6;
+      flex: 1
+    }
+  }
+```
+```javascript
+  // src/pages/ListPage.js
+  import React from 'react';
+  import PageTemplate from 'components/common/PageTemplate';
+  import ListWrapper from 'components/list/ListWrapper';
+  import PostList from 'compoentes/list/PostList';
+  import Pagination from 'components/list/Pagination';
+
+  const ListPage = () => {
+    return (
+      <PageTemplate>
+        <ListWrapper>
+          <PostList></PostList>
+          <Pagination></Pagination>
+        </ListWrapper>
+      </PageTemplate>
+    );
+  };
+
+  export default ListPage;
+```
+
+## Post 페이지 UI 구현
+```
+  포스트 내용을 볼 수 있는 Post 페이지 구현
+    - 제목
+    - 태그
+    - 날짜
+    - 내용
+  src/components/post
+  Generate new component
+```
+
+### PostInfo 컴포넌트
+```javascript
+  // PostInfo 컴포넌트에는 제목, 태그, 작성 날짜
+  // src/components/post/PostInfo/PostInfo.js
+  import React from 'react';
+  import styles from './PostInfo.scss';
+  import classNames from 'classnames/bind';
+
+  const cx = classNames.bind(styles);
+
+  const PostInfo = () => (
+    <div className={cx('post-info')}>
+      <h1>타이틀</h1>
+      <div className={cx('tags')}>
+        <a>#태그</a><a>#태그</a><a>#태그</a>
+      </div>
+      <div className={cx('date')}>Oct 29, 2017</div>
+    </div>
+  );
+
+  export default PostInfo;
+```
+```scss
+  // src/components/post/PostInfo/PostInfo.scss
+  @import 'utils';
+
+  .post-info {
+    background: $oc-blue-6;
+    height: 24rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    .info {
+      margin-top: -5rem; // 헤더 크기만큼 위로
+      width: 1024px;
+      padding: 1rem;
+      color: white;
+      h1 {
+        font-weight: 300;
+        font-size: 3rem;
+        margin: 0;
+        word-wrap: break-word; // 내용이 너무 길면 다음 줄에 작성
+      }
+      .tags {
+        margin-top: 1rem;
+        font-size: 1.25rem;
+        font-weight: 500;
+        a { 
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+        a + a {
+          margin-left: 0.25rem; // 사이 여백
+        }
+      }
+      .date {
+        text-align: right;
+        opacity: 0.75;
+        font-style: italic;
+        font-size: 1.25rem;
+      }
+    }
+
+    @include media("<large") {
+      .info {
+        h1 { 
+          font-size: 2rem;
+        }
+        .tags, .date {
+          font-size: 1rem;
+        }
+        width: 768px;
+      }
+    }
+    @include media("<medium") {
+      height: auto;
+      padding-bottom: 4rem;
+      .info {
+        padding-top: 0;
+        margin: 0;
+        .tags {
+          margin-top: 0.25rem;
+        }
+        .tags, .date {
+          font-size: 0.85rem;
+        }
+      }
+    }
+  }
+```
+```javascript
+  // src/pages/PostPage.js
+  import React from 'react';
+  import PageTemplate from 'components/common/PageTemplate';
+  import PostInfo from 'components/post/PostInfo';
+
+  const PostPage = () => {
+    return (
+      <PageTemplate>
+        <PostInfo></PostInfo>
+      </PageTemplate>
+    )
+  };
+
+  export default PostPage;
+```
+
+### PostBody 컴포넌트
+```javascript
+  // 포스트 내용이 보이는 PostBody 컴포넌트 구현
+  // src/components/post/PostBody/PostBody.js
+  import React from 'react';
+  import styles from './PostBody.scss';
+  import classNames from 'classnames/bind';
+
+  const cx = classNames.bind(styles);
+
+  const PostBody = () => (
+    <div className={cx('post-body')}>
+      <div className={cx('paper')}>
+        내용
+      </div>
+    </div>
+  );
+
+  export default PostBody;
+```
+```scss
+  // src/components/PostBody/PstBody.scss
+  @import 'utils';
+
+  .post-body {
+    .paper {
+      padding: 2rem;
+      padding-top: 2.5rem;
+      padding-bottom: 2.5rem;
+      background: white;
+      @include material-shadow(4, 0.5);
+      // 위로 3rem 이동시켜 주어 파란색 배경을 침범하게 합니다.
+      transform: translateY(-3rem); 
+      margin: 0 auto;
+      min-height: 20rem;
+
+      // 해상도에 따라 다른 width를 설정합니다.
+      width: 1024px;
+      @include media("<large") { width: 768px; }
+      @include media("<medium") { width: calc(100% - 2rem); }
+    }
+  }
+```
+```javascript
+  // src/pages/PostPage.js
+  import React from 'react';
+  import PageTemplate from 'components/common/PageTemplate';
+  import PostInfo from 'components/post/PostInfo';
+  import PostBody from 'components/post/PostBody';
+
+  const PostPage = () => {
+    return (
+      <PageTemplate>
+        <PostInfo></PostInfo>
+        <PostBody></PostBody>
+      </PageTemplate>
+    );
+  };
+
+  export default PostPage;
+```
