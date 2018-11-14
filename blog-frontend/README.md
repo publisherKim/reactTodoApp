@@ -1568,3 +1568,68 @@
 
   export default EditorTemplate;
 ```
+
+### EditorHeader 컴포넌트
+```javascript
+  /*
+    EditorHeadr
+      - 뒤로가기
+      - 작성하기
+  */
+  // src/components/editor/EditorHeader/EditorHeader.js
+  import React from 'react';
+  import styles from './EditorHeader.scss';
+  import classNames from 'classnames/bind';
+  import Button from 'components/common/Button';
+
+  const cx = classNames.bind(styles);
+
+  const EditorHeader = ({onGoBack, onSubmit}) => {
+    <div className={cx('editor-header')}>
+      <div className={cx('back')}>
+        <Button onClick={onGoBack} theme="outline">뒤로가기</Button>
+      </div>
+      <div className={cx('submit')}>
+        <Button onClick={onSubmit} theme="outline">작성하기</Button>
+      </div>
+    </div>
+  };
+
+  export default EditorHeader
+```
+```scss
+  // src/components/editor/EditorHeader/EditorHeader.scss
+  @import 'utils';
+
+  .editor-header {
+    background: $oc-blue-6;
+    height: 4rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    display: flex;
+    align-items: center;
+
+    .submit {
+      margin-left: auto;
+    }
+  }
+```
+```javascript
+  // src/pages/EditorPage.js
+  import React from 'react';
+  import EditorTemplate from 'components/editor/EditorTemplate';
+  import EditorHeader from 'components/editor/EditorHeader';
+
+  const EditorPage = () => {
+    return (
+      <EditorTemplate
+        header={<EditorHeader/>}
+        editor="에디터"
+        preview="프리뷰"
+      >
+      </EditorTemplate>
+    );
+  };
+
+  export default EditorPage;
+```
