@@ -1885,3 +1885,67 @@
 
   export default EditorPane;
 ```
+```scss
+  /*
+    html을 조사하면 code-editor 클래스를 가진 div 내부에 CodeMirror가 생성 됨
+    이 부분을 스타일링 하기
+    폰트를 우리가 이전에 설정한 D2 Coding으로 지정하고, 세로 크기를 전부 차지하게 스타일 작성
+  */
+  .code-editor {
+    flex: 1;  // 남는 영역 다 차지하기
+    background: $oc-gray-9;
+    display: flex;
+    flex-direction: column; // .CodeMirror가 세로 영역을 전부 차지
+    :global .CodeMirror {
+      font-size: 1rem;
+      flex: 1;
+      font-family: 'D2 Coding';
+    }
+  }
+  /*
+    CodeMirror라고 하면 CSS Module을 적용하여 고유 id를 가진 클래스 이름을 생성한다.
+    앞부분에 :global 키워드를 붙여 주면 해당 클래스에는 CSS Module를 적용하지 않음
+
+    에티터가 세로길이를 전부 차지하며, 에디터 폰트도 변경 됨
+  */
+```
+
+## 에디터 상태 관리
+
+### editor 모듈 생성
+```javascript
+  /*
+    Editor에서 작성할 제목, 내용, 태그들의 상태를 리덕스에서 관리
+  */
+  // src/stor/modules/editor.js
+  import { createAction, handleActions } from 'redux-actions';
+
+  import { map } from 'immutable';
+  import { pender } from 'redux-pender';
+
+  // action types
+  const INITIALIZE = 'editor/INITIALIZE';
+  const CHANGE_INPUT = 'editor/CHANGE_INPUT';
+
+  // action creators
+  export const initialize = createAction(INITIALIZE);
+  export const changeInput = createACtion(CHANGE_INPUT);
+
+  // initial state 
+  const initialState = Map({
+    title: '',
+    markdown: '',
+    tags: ''
+  });
+
+  // reducer 
+  export default handleACtions({
+    [INITIALIZE]: (state, action) => initialState,
+    [CHANGE_INPUT]: (state, action) => {
+      const { name, value } = action.payload;
+      return state.set(name, value);
+    }
+  }, initialState);
+
+  // INITIALIZE와 CHANGE_INPUT 액션을 만들어 줌
+```
