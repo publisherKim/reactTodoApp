@@ -1949,3 +1949,188 @@
 
   // INITIALIZE와 CHANGE_INPUT 액션을 만들어 줌
 ```
+
+### EditorPaneContainer 컴포넌트 생성
+```javascript
+  // src/containers/editor/EditorPaneContainer.js
+  import React, { Component } from 'react';
+  import EditorPane from 'components/editor/EditorPane';
+  import { bindActionCreators } from 'redux';
+  import { connect } from 'react-redux';
+  import * as editorActions from 'store/modules/editor';
+
+  class EditorPaneContainer extends Component {
+    handleChangeInput = ({name, value}) => {
+      const { EditorActions } = this.props;
+      EditorActions.changeInput({name, value});
+    }
+
+    render() {
+      const { title, tags, markdown } = this.props;
+      const { handleChangeInput } = this;
+
+      return (
+        <EditorPane
+          title={title}
+          markdown={markdown}
+          tags={tags}
+          onChangeInput={handleChangeInput}
+        >
+        </EditorPane>
+      )
+    }
+  }
+
+  export default connect(
+    (state) => ({
+      title: state.editor.get('title'),
+      markdown: state.editor.get('markdown'),
+      tags: state.editor.get('tags')
+    }),
+    (dispatch) => ({
+      EditorActions: bindActionsCreators(editorActions, dispatch)
+    })
+  )(EditorPaneContainer);
+
+  /*
+    title, markdown, tags를 연결했고, handleChangeInput 메서드를 만들어 CHANGE_INPUT 액션을 실행하도록 설정
+  */
+```
+```javascript
+  // src/pages/Editor
+  import React from 'react';
+  import EditorTemplate from 'components/editor/EditorTemplate';
+  import EditorHeader from 'components/editor/EditorHeader';
+  import EditorPaneContainer from 'components/editor/EditorPaneContainer';
+  import PreviewPane from 'components/editor/PreviewPane';
+
+  const EditorPage = () => {
+    return (
+      <EditorTemplate
+        header={<EditorHeader/>}
+        editor={<EditorPaneContainer/>}
+        preview={<PreviewPane/>}
+      ></EditorTemplate>
+    );  
+  };
+
+  export default EditorPage;
+```
+```javascript
+  // provider를 통해 스토어 주입하기
+  // src/Root.js
+  import React from 'react';
+  import { BrowserRouter } from 'react-router-dom';
+  import App from 'components/App';
+  import { Provider } from 'react-redux';
+  import configure from 'store/configure';
+
+  const store = configure();
+
+  const Root = () => {
+    return (
+      <Provider store={store}>
+        <BrowserRouter>
+          <App/>
+        </BrowserRouter>    
+      </Provider>
+
+    );
+  };
+
+  export default Root;
+```
+
+### EditorPane 수정
+```javascript
+  /*
+    props로 받은 값들을 각 input에 설정하고, 변화가 일어나면 props로 전달받은 onChangeInput을 호출
+    
+    제목과 태그는 인풋에 onChange 이벤트를 설정하여 값을 줄 수 있지만, CodeMirror는
+    initializeEditor 함수가 호출될 때 이벤트를 직접 등록해야 함
+
+    또 props로 받은 markdown 값을 CodeMirror 인스턴스에 반영해야 하기 때문에,
+    componentDidUpdate 부분에서 markdown 값을 바꾸면 setValue를 사용하여 내용을 변경해 주어야 함
+
+    이 과정에서 cursor 위치가 초기화될 수 있기 때문에 setCursor를 사용하여 cursor 값을
+    유지해야 함
+  */
+  
+  // src/components/editor/EditorPane/EditorPane.js
+  (...)
+  class EditorPane extends Component {
+    editor = null;  // 에디터 ref
+    codeMirror = null;  // CodeMirror 인스턴스
+    cursor = null;  // 에디터의 텍스트 cursor 위치
+
+    initalizeEditor = () => {
+      this.codeMirror = CodeMirror(this.editor, {
+        mode: 'markdown',
+        theme: 'monokai',
+        lineNumbers: true,  // 왼쪽에 라인 넘버 띄우기
+        lineWrapping: true  // 내용이 너무 길면 다음 줄에 작성
+      });
+      this.codeMirror.on('change', this.handleChangeMarkdown);
+    }
+  }
+
+  componentDidMount() {
+    this.initializeEditor();
+  }
+
+  handleChange = (e) => {
+    const { onChangeInput } = this.props;
+    const { value, name } = e.target;
+    onChangeInput({name, value});
+  };
+
+  handleChangeMarkdown = (doc) => {
+    const { onChangeInput } = this.props;
+    this.cursor = doc.getCursor();  // 텍스트 cursor 위치 저장
+    onChangeInput({
+      name: 'markdown',
+      value: doc.getValue()
+    })
+  };
+
+  componentDidUpdate(prevProps, prevState) {
+    // markdown이 변경되면 에디터 값도 변경
+    // 이 과정에서 텍스트 커서의 위치가 초기화 되기 때문에,
+    // 저장한 커서의 위치가 있으면 해당 위치로 설정 됨
+    if(prevProps.markdown !== this.props.markdown) {
+      if(!codeMirror) return; // 인스턴스를 아직 만들지 않았을 때
+      codeMirror.setValue(this.props.markdown);
+      if(!cursor) return; // 커서가 없을때
+      codeMirror.setCursor(cursor);
+    }
+  }
+
+  render() {
+    const { handleChange } = this;
+    const { tags, title } = this.props;
+
+    return (
+      <div classNmae={cx('editor-pane')}>
+        <input 
+          className={cx('title')}
+          placeholder="제목을 입력하세요"
+          name="title"
+          value={title}
+          onChange={handleChange}
+        />
+        <div className={cx('code-editor')} ref={ref => this.editor=ref}></div>
+        <div className={cx('tags')}>
+          <div className={cx('description')}>태그</div>
+          <input
+            name="tags"
+            placeholder="태그를 입력하세요 (쉼표로 구분)"
+            value={tags}
+            onChange={handleChange}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  export default EditorPane;
+```
