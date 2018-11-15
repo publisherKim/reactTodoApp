@@ -2134,3 +2134,92 @@
 
   export default EditorPane;
 ```
+
+## 마크다운 변환
+```
+  에디터로 작성한 마크다운을 HTML로 변환하여 화면에 띄우기
+
+  마크다운을 렌더링하는 것은, 에디터에서도 가능하지만, 포스트를 볼 때도 가능
+  MarkdownRender 컴포넌트를 common 경로에 만들어서 사용
+```
+
+### MarkdownRender 컴포넌트 생성
+```javascript
+  /*
+    components/common 경로에 MarkdownRender 컴포넌트를 클래스 형태로 만들기
+    marked를 사용하여 마크다운을 html로 변환하고, 이를 렌더링하는 코드 입력하기
+  */
+  // src/components/common/MarkdownRender/MarkdownRender.js
+  import React, { Component } from 'react';
+  import styles from './MarkdownRender.scss';
+  import classNames from 'classnames/bind';
+
+  import marked from 'marked';
+
+  const cx = classNames.bind(styles);
+
+  class MarkdownRender extends Component {
+    state = {
+      html: ''
+    }
+
+    renderMarkdown = () => {
+      const { markdown } = this.props;
+      // 마크 다운이 존재하지 않는다면 공백 처리
+      if(!markdown) {
+        this.setState({html: ''});
+        return;
+      }
+      this.setState({
+        html: marked(markdown, {
+          breaks: true, // 일반 엔터로 새 줄 입력
+          sanitize: true  // 마크다운 내부 html 무시
+        })
+      });
+    }
+
+    constructor(props) {  
+      super(props);
+      const { markdown } = props;
+      // 서버사이드 렌더링에서도 마크다운 처리가 되도록 constructor 쪽에서도 구현함
+      this.state = {
+        html: markdown ? marked(props.markdown, {breaks: true, sanitize: true}) : ''
+      }
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+      // markdown 값이 변경되면 renderMarkdown을 호출한다.
+      if(prevProps.markdown !== this.props.markdown) {
+        this.renderMarkdown();
+      }
+    }
+
+    render() {
+      const { html } = this.state;
+
+      // React에서 html을 렌더링하려면 객체를 만들어 내부에
+      // __html 값을 설정해야 함
+      const markup = {
+        __html: html
+      };
+
+      // dangerouslySetInnerHTML 값에 해당 객체를 넣어주면 됨
+      return (
+        <div className={cx('markdown-render')} dangerouslySetInnerHTML={markup} />
+      );
+    }
+  }
+
+  export default MarkdownRender;
+
+  /*
+    컴포넌트를 만들 때는 호출되는 constructor와 componentDidUpdate에서 마크다운 변환 작업을 허락해 줌
+    constructor에서 마크다운 변환 작업을 하는 이유는 constructor 함수는 버서 사이드 렌더링을 할 때도 
+    호출하기 때문이나 이 작업을 componentDidMount에서 한다면 웹 브라우저 쪽에서만 실행하고,
+    나중에 서버쪽에서는 호출하지 않는다.
+
+    next 
+      : MarkdownRender 컴포넌트를 사용할 차례
+        PreviewPaneContainer를 만들어 주고, PreviewPane에서는 전달받은 markdown을 MarkdownRender를 사용하여 렌더링하기
+  */
+```
