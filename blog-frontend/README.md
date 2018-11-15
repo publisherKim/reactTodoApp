@@ -1809,3 +1809,79 @@
 
   export default EditorPage;
 ```
+
+## 마크다운 에디터 구현
+```
+  마크다운 에디터를 구현하기 위해 라이브러리가 세게 필요함
+    - codemirror
+    - marked
+    - prismjs
+
+  yarn add codemirror marked prismjs
+```
+
+### CodeMirror 적용
+```javascript
+  /*
+    CodeMirror는 코드 에디터 라이브러리
+    코드에 색상을 입혀 주는 역활
+    마크다운을 작성할 떄 각 문법에 따라 다른 색상을 입혀 주고, 
+    마크다운 내부에 입력하는 코드(예: 자바스크립트)에도 문법에 따라 색을 입혀 준다.
+
+    EditorPane에서 CodeMirror 관련 자바스크립트 파일과 스타일을 불러오고,
+    componentDidMount가 되었을 대 CodeMirror 인스턴스를 만들어 페이지에 나타나게 함
+    code-editor 클래스를 가진 div에 ref를 설정하여 해당 DOM에 CodeMirror를 삽입한다.
+  */
+  // src/components/editor/EditorPane/EditorPane.js
+  import React, { Component } from 'react';
+  import styles from './EditorPane.scss';
+  import classNames from 'classnames/bind';
+
+  import CodeMirror from 'codemirror';
+
+  import 'codemirror/mode/markdown/markdown';  // 마크다운 문법 색상
+  // 마크다운 내부에 들어가는 코드 색상
+  import 'codemirror/mode/javascript/javascript';
+  import 'codemirror/mode/jsx/jsx';
+  import 'codemirror/mode/css/css';
+  import 'codemirror/mode/shell/shell';
+
+  // CodeMirror를 위한 CSS 스타일
+  import 'codemirror/lib/codemirror.css';
+  import 'codemirror/theme/monokai.css';
+
+  const cx = classNames.bind(styles);
+
+  class EditorPane extends Component {
+    editor = null;  // 에디터 ref
+    codeMirror = null // CodeMirror 인스턴스
+
+    initializeEditor = () => {
+      this.codeMirror = CodeMirror(this.editor, {
+        mode: 'markdown',
+        theme: 'monokai',
+        lineNubmers: true,  // 왼쪽에 라인 넘버 띄우기
+        lineWrapping: true  // 내용이 너무 길면 다음 줄에 작성
+      })
+    }
+
+    componentDidMount() {
+      this.initializeEditor();
+    }
+
+    render() {
+      return (
+        <div className={cx('editor-pane')}>
+          <input className={cx('title')} placeholder="제목을 입력하세요" name="title" />
+          <div className={cx('code-editor')} ref={ref => this.editor=ref}></div>
+          <div className={cx('tags')}>
+            <div className={cx('description')}>태그</div>
+            <input name="tags" placeholder="태그를 입력하세요 (쉼표로 구분)" />
+          </div>
+        </div>
+      );
+    }
+  }
+
+  export default EditorPane;
+```
