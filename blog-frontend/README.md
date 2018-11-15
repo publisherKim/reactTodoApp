@@ -1750,3 +1750,62 @@
 
   export default EditorPage;  
 ```
+
+### PreviewPane 컴포넌트
+```javascript
+  // src/components/editor/PreviewPane/PreveiwPane.js
+  import React from 'react';
+  import styles from './PreveiwPane.scss';
+  import classNames from 'classnames/bind';
+
+  const cx = classNames.bind(styles);
+
+  const PreviewPane = ({markdown, title}) => (
+    <div className={cx('preview-pane')}>
+      <h1 className={cx('title')}>
+        제목
+      </h1>
+      <div>
+        내용
+      </div>
+    </div>
+  );
+
+  export default PreviewPane;
+```
+```scss
+  // src/components/editor/Preview/PreviewPane.scss
+  @import 'utils';
+  .preview-pane {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto; // 크기가 초과할 때 스크로라 나타나게 설정
+    font-size: 1.125rem;
+    .title {
+      font-size: 2.5rem;
+      font-weight: 300;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid $oc-gray-4;
+    }
+  }
+```
+```javascript
+  import React from 'react';
+  import EditorTemplate from 'components/editor/EditorTemplate';
+  import EditorHeader from 'components/editor/EditorHeader';
+  import EditorPane from 'components/editor/EditorPane';
+  import PreveiwPane from 'components/editor/PreviewPane';
+
+  const EditorPae = () => {
+    return (
+      <EditorTempalte
+        header={<EditorHeder/>}
+        editor={<EditorPane/>}
+        preview={<PreviewPane/>}
+      >
+      </EditorTempalte>
+    );
+  };
+
+  export default EditorPage;
+```
