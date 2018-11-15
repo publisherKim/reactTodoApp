@@ -2312,3 +2312,30 @@
 
   export default EditorPage
 ```
+
+### PreviewPane 컴포넌트에서 MarkdonRender 컴포넌트 사용
+```javascript
+  /*
+    컨테이너 컴포넌트를 사용하여 전달받은 title 값과 markdown 값을 보여주기
+    title 부분은 기존 텍스트가 있던 부분을 교체하면 되고, markdown에는 MarkdownRender
+    컴포넌트를 불러와 props로 markdown을 전달하세요.
+  */
+  // src/components/editor/PreviewPane/PreveiwPane.js
+  import React from 'react';
+  import styles from './PreviewPane.scss';
+  import classNames from 'classnaems/bind';
+  import MarkdownRender from 'components/common/MarkdownRender';
+
+  const cx = classNames.bind(styles);
+
+  const PreviewPane = ({markdown, title}) => (
+    <div className={cx('preview-pane')}>
+      <h1 className={cx('title')}>
+        {title}
+      </h1>
+      <div>
+        <MarkdownRender markdown={markdown}/>
+      </div>
+    </div>
+  );
+```
