@@ -2223,3 +2223,92 @@
         PreviewPaneContainer를 만들어 주고, PreviewPane에서는 전달받은 markdown을 MarkdownRender를 사용하여 렌더링하기
   */
 ```
+
+### PreviewPaneContainer 컴포넌트 생성
+```javascript
+  // title 값과 markdown 값을 스토어에서 받아 와 PreviewPane에 넣어줌
+  // src/containers/editor/PreviewPaneContainer.js
+  import React, { Component } from 'react';
+  import { connect } from 'react-redux';
+  import PreviewPane from 'components/editor/PreviewPane';
+
+  class PreviewPaneContainrer extends Component {
+    render() {
+      const { markdown, title } = this.props;
+      return (
+        <PreviewPane title={title} markdown={markdown}/>
+      );
+    }
+  }
+
+  export default connect(
+    (state) => ({
+      title: state.editor.get('title'),
+      markdown: state.editor.get('markdown')
+    })
+  )(PreviewPaneContainer);
+
+  // 그다음에는 EditorPage에서 PreviewPane을 PreviewPaneContainer로 교체
+  // src/pages/EditorPage.js
+  import React from 'react';
+  import EditorTemplate from 'components/editor/EditorTemplate';
+  import EditorHeader from 'components/editor/EditorHeader';
+  import EditorPaneContainer from 'containers/editor/EditorPaneContainer';
+  import PreviewPaneContainer from 'containers/editor/PreveiwPaneContainer';
+
+  const EditorPage = () => {
+    return (
+      <EditorTemplate
+        header={<EditorHeader/>}
+        editor={<EditorPaneContainer/>}
+        preview={<PreviewPaneContainer/>}
+      >
+      </EditorTemplate>
+    )
+  };
+
+  export default EditorPage;
+```
+
+### PreviewPaneContainer 컴포넌트
+```javascript
+  // src/containers/editor/PreviwPaneContainer.js
+  import React, { Component } from 'react';
+  import { connect } from 'react-redux';
+  import PreviewPane from 'components/editor/PreveiwPane';
+
+  class PreveiwPaneContainer extends Component {
+    render() {
+      const { markdown, title } = this.props;
+      return (
+        <PreviewPane title={title} markdown={markdown}/>
+      );
+    }
+  }
+
+  export default connect({
+    (state) => ({
+      title: state.editor.get('title'),
+      markdown: state.editor.get('markdown')
+    })
+  })(PreviewPaneContainer);
+```
+```javascript
+  // src/pages/EditorPage.js
+  import React from 'react';
+  import EditorTemplate from 'components/editor/EditorTemplate';
+  import EditorHeader from 'components/editor/EditorHeader';
+  import EditorPaneContainer from 'containers/editor/EditorPaneContainer';
+  import PreviewPaneContainer from 'containers/editor/PrevewPaneContianer';
+
+  const EditorPage = () => {
+    <EditorTemplate
+      header={<EditorHeader/>}
+      editor={<EditorPaneContainer/>}
+      preview={<PreviewPaneContainer/>}
+    >
+    </EditorTemplate>
+  };
+
+  export default EditorPage
+```
