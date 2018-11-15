@@ -10,4 +10,13 @@
     padding-bottom: 2rem;
     border-bottom: 1px solid $oc-gray-4;
   }
+
+  @include media("<medium") {
+    .editor {
+      flex: 1 !important;
+    }
+    .preview, .separator {
+      display: none;
+    }
+  }
 }
