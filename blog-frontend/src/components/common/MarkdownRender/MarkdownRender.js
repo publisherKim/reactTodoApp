@@ -23,6 +23,7 @@ class MarkdownRender extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    // markdown 값이 변경되면 renderMarkdown을 호출합니다.
     if(prevProps.markdown !== this.props.markdown) {
       this.renderMarkdown();
     }
@@ -55,18 +56,6 @@ class MarkdownRender extends Component {
       html: markdown ? marked(props.markdown, { breaks: true, sanitize: true }) : ''
     }
   }
-
-  componentDidUpdate(prevProps, prevState) {
-    // markdown 값이 변경되면 renderMarkdown을 호출합니다.
-    if(prevProps.markdown !== this.props.markdown) {
-      this.renderMarkdown();
-    }
-    // state가 바뀌면 코드 하이라이팅
-    if(prevState.html !== this.state.html) {
-      Prism.highlightAll();
-    }
-  }
-
   
   render() {
     const { html } = this.state;
