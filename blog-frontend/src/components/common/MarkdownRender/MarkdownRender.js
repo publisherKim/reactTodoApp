@@ -22,6 +22,16 @@ class MarkdownRender extends Component {
     html: ''
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    if(prevProps.markdown !== this.props.markdown) {
+      this.renderMarkdown();
+    }
+    // state가 바뀌면 코드 하이라이팅
+    if(prevState.html !== this.state.html) {
+      Prism.highlightAll();
+    }
+  }
+
   renderMarkdown = () => {
     const { markdown } = this.props;
     // 마크다운이 존재하지 않는다면 공백처리

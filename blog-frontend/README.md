@@ -2339,3 +2339,50 @@
     </div>
   );
 ```
+
+### Prismjs를 사용하여 코드에 색상 입히기
+```javascript
+  /*
+    Prismjs를 사용하여 코드 블록을 꾸미기
+    Prismjs 관련 코드를 불러온 후 Prism.highlightAll() 함수를 호출하면 
+    화면에 있는 코드 블록에 스타일 입히기
+
+    이 함수는 마크다운이 변환되어 html을 렌더링한 후 반영해야 함
+    componentDidUpdate에서 state 값이 바뀔때 이 코드를 호출한다.
+  */
+  // src/components/MarkdownRender/MarkdownRender.js
+  import React, { Component } from 'react';
+  import styles from './MarkdownRender.scss';
+  import classNames from 'classnames/bind';
+
+  import marked from 'marked';
+
+  // prism 관련 코드 불러오기
+  import Prism from 'prismjs';
+  import 'prismjs/themes/prism-okadia.css';
+  // 지원할 코드 형식들을 불러오기
+  // http://prismjs.com/#languages-list 참조
+  import 'prismjs/components/prism-bash.min.js';
+  import 'prismjs/components/prism-javascript.min.js';
+  import 'prismjs/components/prism-jsx.min.js';
+  import 'prismjs/components/prsm-css.min.js';
+
+  const cx = classNames.bind(styles);
+
+  class MarkdownRender extends Component {
+    (...)
+    componentDidUpdate(prevProps, prevState) {
+      // markdown 값이 변경되면 renderMarkdown을 호출한다.
+      if(prevProps.markdown !== this.props.markdown) {
+        this.renderMarkdown();
+      }
+      // state가 바뀌면 코드 하이라이팅
+      if(prevState.html !== this.state.html) {
+        Prism.highlightAll();
+      }
+    }
+    (...)
+  }
+
+  export default MarkdownRender;
+```
