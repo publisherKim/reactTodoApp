@@ -18,7 +18,6 @@ class EditorHeaderContainer extends Component {
   };
 
   handleSubmit = async () => {
-    console.log('is Excuted???');
     const { title, markdown, tags, EditorActions, history } = this.props;
     const post = {
       title,
