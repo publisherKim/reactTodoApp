@@ -360,7 +360,7 @@
           {
             // tags가 존재할 때만 map을 실행하기
             tags && tags.map(
-              tag => <Link key={tag} to={`/tag/${tag}`}>#{tag}</Link>
+              tag => <Link key={tag} to={`/tag/${tag}`}>#{tag}></Link>
             )
           }
         </div>
