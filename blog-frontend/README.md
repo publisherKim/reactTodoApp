@@ -222,3 +222,40 @@
   (...)
   export const getPost = (id) => axios.get(`/api/posts/${id}`);
 ```
+
+### post 모듈 생성
+```javascript
+  /*
+    post 모듈에서 포스트 정보를 불러오는 액션을 작서하고 상태를 관리하는 코드를 입력하기
+    getPost 함수를 불러와 GET_POST 액션에서 사용하도록 설정하고, 요청 성공시 상태에 할당
+  */
+  // src/store/modules/post.js
+  import { createAction, handleActions } from 'redux-actions';
+  
+  import { Map, fromJS } from 'immutable';
+  import { pender } from 'redux-penderr';
+
+  import * as api from 'lib/api';
+
+  // action types
+  const GET_POST = 'post/GET_POST';
+
+  // action creators
+  export const getPost = createAction(GET_POST, api.getPost);
+
+  // initial state
+  const initialState = Map({
+    post: Map({})
+  });
+
+  // reducer
+  export default handleActions({
+    ...pender({
+      type: GET_POST,
+      onSuccess: (statem action) => {
+        const { data: post } = action.payload;
+        return state.set('post', fromJS(post));
+      }
+    })
+  }, initialState)
+```
