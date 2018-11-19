@@ -208,3 +208,17 @@
     아직 포스트를 읽는 API가 구현되지 않아서 기본값만 나타남
   */
 ```
+
+## 포스트 보여주기
+```
+  포스트를 읽는 기능을 구현하기
+  /api/posts/:id API를 호출하여 데티터를 받아온 후 post 모듈이 지닌 상태에 할당
+```
+
+### POST 읽기 API 함수 생성
+```javascript
+  // 포스트를 읽는 API를 요청하는 함수 만들기
+  // src/lib/api.js
+  (...)
+  export const getPost = (id) => axios.get(`/api/posts/${id}`);
+```
