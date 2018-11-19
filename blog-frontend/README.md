@@ -259,3 +259,76 @@
     })
   }, initialState)
 ```
+
+### Post 컴포넌트 생성
+```javascript
+  /*
+    Post라는 컨테이너 컴포넌트를 만들어 리덕스 스토어에 있는 데이터를 컴포넌트에 전달한다.
+    Post 컴포넌트에는 PostInfo와 PostBody 컴포넌트를 불러오며, componentDidMount가 발생할때 props로 받아 온 id를 사용하여 특정 id를 가진 포스트를 불러오기
+    렌더링하는 부분에서 로딩 중일 때 아무것도 나타나지 않도록 null을 반환하기
+  */
+  // src/containers/post/Post.js
+  import React, {Component} from 'reacct';
+  import PostInfo from 'components/post/PostInfo';
+  import PostBody from 'components/post/PostBody';
+  import * as postActions from 'store/modules/post';
+  import { connect } from 'react-redux';
+  import { bindActionCreators } from 'redux';
+
+  class Post extends Component {
+    initialize = async () => {
+      const { PostActions, id } = this.props;
+      try {
+        await PostActions.getPost(id);
+      } catch(e) {
+        console.log(e);
+      }
+    }
+
+    componentDidMount() {
+      this.initialize();
+    }
+
+    render() {
+      const { loading, post } = this.props;
+
+      if(loading) return null;  // 로딩 주일 때는 아무것도 보여주지 않음
+
+      const { title, body, publishedDate, tags } = post.toJS();
+
+      return (
+        <div>
+          <PostInfo title={title} publishedDate={publishedDate} tags={tags}></PostInfo>
+          <PostBody body={body}></PostBody>
+        </div>
+      )
+    }
+  }
+
+  export default connect(
+    (state) => ({
+      post: state.post.get('post'),
+      loading: state.pender.pending['post/GET_POST']  // 로딩 상태
+    }),
+    (dispatch) => ({
+      PostActions: bindActionCreators(postAction, dispatch)
+    })
+  )(Post);
+
+  // 이제 이 컴포넌트를 PostPage에서 렌더링 하기. id 값에는 현재 라우트의 id를 넣기
+  // src/pages/PostPage.js
+  import React from 'react';
+  import PageTemplate from 'components/common/PageTemplate';
+  import Post from 'containers/post/post';
+
+  const PostPage = ({match}) => {
+    const { id } = match.params;
+    return(
+      <PageTemplate>
+        <Post id={id}></Post>
+      </PageTemplate>
+    );
+  };
+
+  export default PostPage;
+```
