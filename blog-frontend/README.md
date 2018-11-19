@@ -97,3 +97,114 @@
     })
   }, initialState);
 ```
+
+### EditorHeaderContainer 컴포넌트 생성
+```javascript
+  /*
+    EditorHeader 컴포넌트에 리덕스 상태와 액션 생성 함수를 붙여 주기
+    왼쪽 뒤로가기 버튼과 오른쪽 글쓰기 버튼에 기능 붙이기
+
+    뒤로가기
+      - history 객체의 goBack 함수를 호출
+      - withRouter를 불러와 컴포넌트를 내보낼 때 감싸 주기
+      - 해당 컴포넌트에서 리액트 라우터가 전달해 주는 props 값을 받아오기 위함
+
+    현재 컴포넌트는 리덕스와 상태를 연결하려고 connect 함수로 감싸여 있는데, connet와 withRouter가
+    중첩되어도 무방
+
+    오른쪽 버튼을 눌렀을 때는 글쓰기 액션을 발생시킨 후 postId 값을 받아 와 포스트 주소로 이동하기
+
+    componentDidMount가 발생할때 INITIALIZE 액션을 실행시켜 에디터 상태를 초기화 하기
+    미초기화시 이전에 작성한 상태가 그대로 유지 됨
+  */
+  // src/containers/editor/EditorHeaderContainer.js
+  import React, { Component } from 'react';
+  import EditorHeader from 'components/editor/EditorHeader';
+  import { connect } from 'react-redux';
+  import { bindActionCreators } from 'redux';
+  import { withRouter } from 'react-router-dom';
+
+  import * as editorActions from 'store/modules/editor';
+
+  class EditorHeaderContainer from extends Component {
+    componentDidMount() {
+      const { EditorActions } = this.props;
+      EditorActions.initialize();
+    }
+
+    handleGoBack = () => {
+      const { history } = this.props;
+      history.goBack();
+    }
+
+    handleSubmit = async() => {
+      const { title, markdown, tags, EditorActions, history } = this.props;
+      const post = {
+        title,
+        body: markdown,
+        // 태그 텍스트를 ,로 분리시키고 앞뒤 공백을 지운 후 중복되는 값을 제거
+        tags: tags === "" ? [] : [...new Set(tags.split(',').map(tag => tag.trim()))]
+      };
+
+      try {
+        await EditorActions.writePost(post);
+        // 페이지를 이동 시키기 주의: postId는 위쪽에서 레퍼런스를 만들지 않고
+        // 이 자리에서 this.props.postId를 조회해야 함(현재 값을 불러오기 위함)
+        history.push(`/post/${this.props.postId}`);
+      } catch(e) {
+        console.log(e);
+      }
+    };
+
+    render() {
+      const { handleGoBak, handleSubmit } = this;
+
+      return (
+        <EditorHeader
+          onGoBack={handleGoBack}
+          onSubmit={handleSubmit}
+        ></EditorHeader>
+      );
+    }
+  }
+
+  export default connect(
+    (state) => ({
+      title: state.editor.get('title'),
+      markdown: state.editor.get('markdown'),
+      tags: state.editor.get('tags'),
+      postId: state.editor.get('postId')
+    }),
+    (dispatch) => ({
+      EditorActions: bindActionCreators(editorActions, dispatch)
+    })
+  )(withRouter(EditorHeaderContainer));
+
+  // EditorPage를 열어 기존 EditorHeader를 EditorHeaderContainer로 바꾸기
+  // src/pages/EditorPage.js
+  import React from 'react';
+  import EditorTemplate from 'components/editor/EditorTemplate';
+  import EditorHeaderContainer from 'containers/editor/EditorHeaderContainer';
+  import EditorPaneContainer from 'containers/editor/EditorPaneContainer';
+  import PreviewPaneContainer from 'containers/editor/PreviewPaneContainer';
+
+  const EditorPage = () => {
+    return (
+      <EditorTemplate
+        header={<EditorHeaderContainer/>}
+        editor={<EditorPaneContainer/>}
+        preview={<PreviewPaneContainer/>}
+      >
+      </EditorTemplate>
+    )
+  };
+
+  export default EditorPage;
+
+  /*
+    이제 포스트 작성 기능을 완료
+    뒤로가기 버튼 테스트
+    작성하기 버튼 테스트
+    아직 포스트를 읽는 API가 구현되지 않아서 기본값만 나타남
+  */
+```
