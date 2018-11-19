@@ -10,7 +10,7 @@ const CHANGE_INPUT = 'editor/CHANGE_INPUT';
 const WRITE_POST = 'editor/WRITE_POST';
 
 // action creators
-export const initilize = createAction(INITIALIZE);
+export const initialize = createAction(INITIALIZE);
 export const changeInput = createAction(CHANGE_INPUT);
 export const writePost = createAction(WRITE_POST, api.writePost);
 
