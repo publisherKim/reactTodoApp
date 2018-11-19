@@ -51,3 +51,12 @@
   REST API 웹 요청을 프로미스 기반으로 간편하게 할 수 있는 axios 라비브러리 설치
   yarn add axios
 ```
+
+### 글 작성 API 함수 생성
+```javascript
+  // 클라이언트에서 API를 호출하는 함수 생성
+  // src/lib/api.js
+  import axios from 'axios';
+
+  export const writePost = ({title, body, tags}) => axios.get('/api/posts', {title, body, tags});
+```
