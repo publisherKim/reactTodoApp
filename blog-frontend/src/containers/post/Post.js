@@ -21,15 +21,12 @@ class Post extends Component {
 
   render() {
     const { loading, post } = this.props;
-
     if(loading) return null;
-
     const { title, body, publishedDate, tags } = post.toJS();
-
     return (
       <div>
-        <PostInfo title={title} publishedDate={publishedDate} tags={tags}/>
-        <PostBody body={body}/>
+        <PostInfo title={title} publishedDate={publishedDate} tags={tags}></PostInfo>
+        <PostBody body={body}></PostBody>
       </div>
     );
   }
