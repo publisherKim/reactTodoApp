@@ -60,3 +60,40 @@
 
   export const writePost = ({title, body, tags}) => axios.get('/api/posts', {title, body, tags});
 ```
+
+### editor 모듈에 WRITRE_POST 액션 생성
+```javascript
+  /*
+    writePost 함수를 액션화 하기
+    WRITE_POST라는 액션 이름을 만들고, 액션 생성함수 만들고 API 요청이 성공했을 때 
+    서버에서 응답하는 _id 값을 받아와 editor 리덕스 모듈에서 사용하는 상태의 postId 값에 전달하기
+  */
+  // src/store/modules/editor.js
+  import * as api from 'lib/api';
+
+  // action types
+  (...)
+  const WRITE_POST = 'editor/WRITE_POST';
+
+  // action creators
+  (...)
+  export const writePost = createAction(WRITE_POST, api.writePost);
+
+  // inital state 
+  const initialState = Map({
+    (...)
+    postId: null
+  });
+
+  // reducer
+  export default handleActions({
+    (...)
+    ...pender({
+      type: WRITE_POST,
+      onSuccess: (state, action) => {
+        const { _id } = action.payload.data;
+        return state.set('postId', _id);
+      }
+    })
+  }, initialState);
+```
