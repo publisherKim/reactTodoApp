@@ -332,3 +332,74 @@
 
   export default PostPage;
 ```
+
+### PostInfo와 PostBody에서 올바른 데이터 보여 주기
+```javascript
+  /*
+    PostInfo와 PostBody 컴포넌트에서는 props로 받은 값이 아니라 하드코딩한 텍스트가 나타남
+    텍스트가 들어가는 부분에 props로 넣어 준 값들을 렌더링 해 보기
+
+    날짜를 텍스트 형태로 보여주는 부분에서는 편의상 moment 라이브러리를 설치하여 사용하기
+    cf) https://momentjs.com/ 
+  */
+  // src/components/post/PostInfo/PostInfo.js
+  import React from 'react';
+  import styles from './PostInfo.scss';
+  import classNames from 'classnames/bind';
+
+  import { Link } from 'react-router-dom';
+  import moment from 'moment';
+
+  const cx = classNames.bind(styles);
+
+  const PostInfo = ({publishedDate, title, tags}) => (
+    <div className={cx('post-info')}>
+      <div className={cx('info')}>
+        <h1>{title}</h1>
+        <div className={cx('tags')}>
+          {
+            // tags가 존재할 때만 map을 실행하기
+            tags && tags.map(
+              tag => <Link key={tag} to={`/tag/${tag}`}>#{tag}</Link>
+            )
+          }
+        </div>
+        <div className={cx('date')}>{moment(publishedDate).format('li')}</div>
+      </div>
+    </div>
+  )
+
+  export default PostInfo;
+
+  // PostBody 컴포넌트 수정하기
+  // src/components/post/PostBody/PostBody.js
+  import React from 'react';
+  import styles from '/PostBody.scss';
+  import classNames from 'classnames/bind';
+  import MarkdownRender from 'components/common/MarkdownRender';
+
+  const cx = classNames.bind(styles);
+
+  const PostBody = ({body}) => (
+    <div className={cx('post-body')}>
+      <div className={cx('paper')}>
+        <MarkdownRender markdown={body}></MarkdownRender>
+      </div>
+    </div>
+  );
+
+  export default PostBody;
+
+  /*
+    마크다운 렌더링은 잘되었지만, 아직 코드 부분에 색상이 입혀서 표현되진 않음
+    Prism.highlightAll() MarkdownRender 컴포넌트의 componentDidUpdate에서만 실행되기 때문
+
+    에디터에서 마크다운이 변경될 때는 하이라이팅을 제대로 호출하지만, 처음부터 마크다운 값이 있을때는
+    omponentWillMount 부분에서 마크다운 변환 작업이 일어나 html 상태가 바뀌어도 componentDidUpdate를 
+    호출하지 않는다. 따라서 componentDidMount에서도 Prism.highlightAll을 호출하면 이 문제가 해결 됨
+  */
+  // src/components/common/MarkdownRender/MarkdownRender.js - componentDidMount
+  compinentDidMount() {
+    Prism.highlightAll();
+  }
+```
