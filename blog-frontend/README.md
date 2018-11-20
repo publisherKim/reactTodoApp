@@ -403,3 +403,37 @@
     Prism.highlightAll();
   }
 ```
+
+## 포스트 목록 보여 주기
+```
+  목록을 보여 줄 때는 여러가지 변수를 고려해야 함
+    - 웹 사이트에서는 최근 작성한 포스트 열 개를 나열 한다.
+    - 페이지 네이션 하나당 10개씩 순차 나열 한다.
+    - 태그 클릭시: 특정 태그를 가진 포스트들만 분류 해서 나열 한다.
+```
+
+### 포스트 리스트 API 함수 생성
+```javascript
+  /*
+    getPostList 함수 작성
+    option: tag, page
+    함수 파라미터로는 tag값과 page값이 있는 객체를 전달 받으며,
+    객체로 전달된 값을 URL 쿼리로 변환하여 API 주소 뒷부분에 붙여 준다.
+    (tag 옵션은 추후 구현)
+
+    query-string 라이브러리를 사용
+      : 문자열 형태의 URL 쿼리를 객체 형태로 변환할 수 있고,
+        반대로 객체 형태를 문자 형태로도 변환 가능
+    주의: v6 이상은 구형 웹 브라우저에서 호환 x 
+          호환성을 고려한다면 v5를 설치해야함
+    yarn add query-string@5
+  */
+  // src/lib/api.js
+  import axios from 'axios';
+  import queryString from 'query-string';
+
+  (...)
+  export const getPostList = ({tag, page}) => axios.get(`/api/posts/?${queryString.stringify({tag, page})}`);
+
+  // 객체를 URL 쿼리 문자열로 변환할 때는 이처럼 queryString.stringify 함수를 사용
+```
