@@ -686,3 +686,59 @@
 
   export default Pagination;
 ```
+
+### API에서 tag 분류
+```javascript
+  /*
+    백엔드 API를 조금 수정하여 tag 값도 분류할 수 있도록 설정
+    백엔드 프로젝트의 posts.ctrl.js 파일 수정하기
+  */
+  // src/api/posts/posts.ctrl.js - list
+  (...)
+  exports.list = async (ctx) => {
+    // page가 주어지지 않았다면 1로 간주
+    // query는 문자열 형태로 받아 오므로 숫자로 변환
+    const page = parseInt(ctx.query.page || 1, 10);
+    const { tag } = ctx.query;
+
+    const query = tag ? {
+      tags: tag // tags 배열에 tag를 가진 포스트 찾기
+    } : {};
+
+    // 잘못된 페이지가 주어졌다면 오류
+    if (page < 1) {
+      ctx.statue = 400;
+      return;
+    }
+
+    try {
+      const posts = await Post.find(query)
+        .sort({ _id: -1})
+        .limit(10)
+        .skip((page - 1) * 10)
+        .lean()
+        .exec();
+      const postCount = await Post.count(query).exec();
+      const limitBodyLegth = post => ({
+        ...post,
+        body: post.body.length < 350 ? post.body : `${post.body.slice(0, 350)}...`
+      });
+      ctx.body = posts.map(limitBodyLength);
+      // 마지막 페이지 알려주기
+      // ctx.body = posts.map(limitBodyLength);
+      ctx.set('Last-page', Math.ceil(postCont / 10));
+    } catch(e) {
+      ctx.throw(500, e);
+    }
+  };
+  (...)
+
+  /*
+    URL 쿼리 중 tag 존재 유무에 따라 find 함수에 넣을 파라미터를 다르게 설정한다.
+    여기에서 무조건 { tags: tag } 객체를 넣지 않고 tag가 비어 있을 때 빈 객체 { }를 전달한 것은,
+    tag가 없다면 find 함수에 { tags: undefined }를 전달하면서 아무 데이터도 나타나지 않는
+    이슈가 발생한다.
+    
+    이제 태그 분류도 완성. 태그가 있는 포스트에서 태그 링크를 눌러보기
+  */
+```
