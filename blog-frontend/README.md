@@ -839,6 +839,169 @@
   /*
     수정 버튼을 누르면 /editor/?id=ID 페이지로 전환하도록 설정 함
     삭제 버튼을 누르면 props로 전달받은 onRemvoe 함수를 호출하도록 설정함
-    이 함수는 추구 구현
+    이 함수는 추후 구현
   */
+```
+
+### 수정 기능 구현
+```javascript
+  /*
+    에디터에서 포스트 정보 불러오기
+    
+    수정 버튼을 눌러 에디터 페이지로 오면 id라는 쿼리가 설정됩니다. 에티터가 열릴 때 id 값이 
+    존재한다면 해당 포스트 내용을 불러와 editor 상태에 넣어 주기
+
+    기존에 만들었던 getPost API 함수를 재활용하여 editor 모듈에 GET_POST 액션 만들기
+  */
+  // src/store/modules/editor.js
+  (...)
+  const GET_POST = 'editor/GET_POST';
+
+  // action creators
+  (...)
+  export const getPost = creatorAction('GET_POST', api.getPost);
+
+  // initial state
+  const initialState = Map({
+    title: '',
+    markdown: '',
+    tags: '',
+    postId: null
+  });
+
+  // reducer
+  export default handleActions({
+    (...)
+    ...pender({
+      type: GET_POST,
+      onSuccess: (state, action) => {
+        const { title, tags, body } = action.payload.data;
+        return state.set('title', title)
+                    .set('markdown', body)
+                    .set('tags', tags.join(', '));  // 배열 -> ,로 구분된 문자열
+      }
+    })
+  }, initialState);
+
+  /*
+    그 다음에는 EditorHeaderContainer.js location.search에서 id 값을 파싱하여 해당 값이 있다면
+    EditorActions.getPost를 사용하여 포스트 정보를 가져오기
+    EditorActions.initialize로 에디터 상태를 초기화한 후 진행
+  */
+  // src/containers/editor/EditorHeaderContainer.js
+  (...)
+  import queryString from 'query-string';
+  
+  class EditorHeaderContainer extends Component {
+    componentDidMount() {
+      const { EditorActions, location } = this.props;
+      EditorAtions.initialize();  // 에디터 초기화
+
+      // 쿼리 파싱
+      const { id } = queryString.parse(location.search);
+      if(id) {
+        // id가 존재한다면 포스트 불러오기
+        EditorActions.getPost(id);
+      }
+    }
+  }
+  (...)
+  // 포스트를 수정할 때 초기 데이터를 제대로 불러오는지 확인하기
+```
+
+### 수정 API 함수 및 액션 생성
+```javascript
+  /*
+    수정 API 함수는 writePost 함수와 비슷하지만, axios.patch를 사용하고 id 값을 추가로 전달 받는다.
+    api 파일을 열어 다음 함수를 추가한다.
+  */
+  // src/lib/api.js
+  (...)
+  export const editPost = ({id, title, body, tags}) => axios.patch(`api/posts/${id}`, {title, body, tags});
+  /*
+    이제 이 함수를 호출하는 액션을 준비
+
+    여기에서는 리듀서 부분(handleActions)에 따로 로직을 작성할 필요가 없음 현재 어떤 포스트를 수정하는 이미 알고 있으므로
+  */
+  // src/store/modules/editor.js
+  import { createActions, handleActions } from 'redux-actions';
+
+  import { Map } from 'immutable';
+  import { pender } from 'redux-pender';
+  import * as api from 'lib/api';
+
+  // action types
+  (...)
+  const EDIT_POST = 'editor/EDIT_POST';
+
+  // action creators
+  (...)
+  export const editPost = createAction(EDIT_POST, api.editPost);
+  (...)
+  /*
+    액션을 작성한 후 EDitorHeaderContainer를 마저 구현한다.
+    handleSubmit 부분에서 id 값이 있으면 writePost가 아닌 editPost를 호출하도록 설정한다.
+
+    그 다음에는 렌더링 부분에서 id 값이 있을 때 isEdit라는 props를 true로 설정한다.
+  */
+  // src/containers/editor/EditorHeaderontainer.js
+  (...)
+
+  class EditorHeaderContainer extends Component {
+    (...)
+    handleSubmit = async() => {
+      const { title, markdown, tags, EditorActions, History, location } = this.props;
+      const post = {
+        title,
+        body: markdown,
+        // 태그 텍스트를 ,로 분리하고 앞뒤 공백을 지운 후 중복되는 값을 제거한다.
+        tags: tags === "" ? [] : [...new Set(tags.split(',').map(tag => tag.trim()))]
+      };
+      try {
+        // id가 존재하면 editPost 호출
+        const { id } = queryString.parse(location.search);
+        if(id) {
+          await EditorActions.editPost({id, ...post});
+          history.push(`/post/${id}`);
+          return;
+        }
+        await EditorAtions.writePost(post);
+        // 페이지를 이동 한다. 주의: postId는 위쪽에서 레퍼런스를 만들지 말고
+        // 이 자리에서 this.props.postId를 조회해야 한다.(현재 값을 불러오기 위함).
+        history.push(`post/${this.props.postId}`);
+      } catch(e) {
+        console.log(e);
+      }
+    }
+
+    render() {
+      const { handleGoBak, handleSubmit } = this;
+      cosnt { id } = queryString.parse(this.props.location.search);
+      return (
+        <EditorHeader
+          onGoBack={handleGoBack}
+          onSubmit={handleSubmit}
+          isEdit={id ? true: false}
+        ></EditorHeader>
+      );
+    }
+  }
+  (...)
+  /*
+    유저가 헷갈리지 않도록 EditorHeader에서 isEdit 값이 true면 작성하기가 아닌 수정하기라는 문구를 표시하도록 설정
+  */
+  // src/components/editor/EditorHeader/EditorHeader.js
+  (...)
+
+  const EditorHeader = ({onGoBack, onSubmit, isEdit}) => {
+    return (
+      (...)
+        <Button onClick={onSubmit} theme="outline">{isEdit ? '수정' : '작성'}하기</Button>
+      (...)
+    )
+  };
+
+  export default EditorHeader;
+  // 이제 수정 모드일 떄는 다음과 같이 수정하기 버튼이 나타남
+  // 수정 클릭시 내용이 변경된 포스트 페이지로 이동한다.
 ```
