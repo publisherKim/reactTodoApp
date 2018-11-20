@@ -642,3 +642,47 @@
 
   export default PostList;
 ```
+
+### 페이지 네이션 기능 구현
+```javascript
+  /*
+    페이지네이션이 실제로 작동하도록 기능 구현하기
+    딱히 함수를 실행하지 않고 전달 받은 page값, lastPage 값, tag 값을 사용해서 
+    이전 또는 다음 페이지 링크로 이동시켜 주기
+    만들어둔 Button 컴포넌트에 Link 기능도 있기 때문에 to 값을 설정하면 된다.
+    첫 번째 페이지에서는 이전 버튼을 비활성화하고, 마지막 페이지에서는 다음 버튼을
+    비활성화 한다.
+
+    태그를 선택했을 때는 /tag 라우트를 사용하고, 태그를 선택하지 않았을 때는 /page 라우트를 사용한다.
+    주소 생성 작업을 용이하게 진행하기 위해 함수를 따로 작성한다.
+  */
+  // src/components/list/Pagination/Pagination.js
+  import React from 'react';
+  import styles from './Pagination.scss';
+  import classNames from 'classnames/bind';
+  import Button from 'components/common/Button';
+
+  const cx = classNams.bind(styles);
+
+  const Pagination = ({page, lastPage, tag}) => {
+    const createPagePath = (page) => {
+      return tag ? `/tag/${tag}/${page}` : `/page/$(page)`;
+    }
+
+    return (
+      <div className={cx('pagination')}>
+        <Button disabled={page === 1} to={createPagePat(page - 1)}>
+          이전 페이지
+        </Button>
+        <div className={cx('number')}>
+          페이지 {page}
+        </div>
+        <Button disabled={page === lastPage} to={createPagePath(page + 1)}>
+          다음 페이지
+        </Button>
+      </div>
+    )
+  };
+
+  export default Pagination;
+```
