@@ -742,3 +742,103 @@
     이제 태그 분류도 완성. 태그가 있는 포스트에서 태그 링크를 눌러보기
   */
 ```
+
+## 포스트 수정 및 삭제
+### 헤더에 버튼 보여주기
+```javascript
+  /*
+    수정, 삭제 버튼 추가하기
+    수정 버튼을 /editor?postId=ID 링크로 이동하게 설정하고, 
+    삭제 버튼은 onRemove 함수를 props로 받아 와 호출하게 설정
+
+    HeaderContainer를 만들어 포스트 페이지일 때는 포스트 아이디를 전달하도록 설정
+  */
+  // src/containers/common/HeaderContainer.js
+  import React, { Component } from 'react';
+  import Header from 'components/common/Header';
+  import { withRouter } from 'react-router-dom';
+
+  class HeaderContainer extends Component {
+    handleRemove = () => {
+      // 미리 만들어 두기
+    }
+
+    render() {
+      const { handleRemove } = this;
+      const { match } = this.props;
+
+      const { id } = match.params;
+
+      return (
+        <Header
+          postId={id}
+          onRevmoe={handleRemove}
+        ></Header>
+      );
+    }
+  }
+
+  export default withRouter(HeaderContainer);
+
+  /*
+    아직은 리덕스와 연결하지 않았지만, 나중에 관리자 기능 로그인을 구현할 때 connect를 사용하므로
+    containers 디렉터리에 컨테이너 컴포넌트를 만들어 준다.
+  */
+
+  // PageTemplae에서 Header를 대체한다.
+  // src/components/common/PageTemplate/PageTemplate.js
+  import React from 'react';
+  import styles from './PageTemplate.scss';
+  import className from 'classnames/bind';
+  import HeaderContainer from 'containers/common/HeaderContainer';
+  import Footer from 'components/common/Footer';
+
+  const cx = classNames.bind(styles);
+
+  const PageTemplate = ({children}) => (
+    <div className={cx('page-template')}>
+      <HeaderContainer>
+        <main>
+          {children}
+        </main>
+      </HeaderContainer>
+    </div>
+  );
+
+  export default PageTemplate;
+
+  /*
+    이제 params에 id가 있을 때는 해당 값을 Header로 전달한다.
+    Header 컴포넌트를 열어 postId를  전달 받았을 때 두 버튼이 나타나도록 설정한다.
+  */
+  // src/components/common/Header/Header.js
+  (...)
+
+  const Header = ({postId, onRevmoe}) => (
+    <header className={cx('header')}>
+      <div className={cx('header-content')}>
+        <div className={cx('brand')}>
+          <Link to="/">reactblog</Link>
+        </div>
+        <div className={cx('right')}>
+          {
+            // flex를 유지하려고 배열 형태로 렌더링 하기
+            postId && [
+              <Button key="edit" theme="outline" to={`/editor?id=${postId}`}>수정</Button>,
+              <Button key="remove" theme="outline" onClik={onRemove}>삭제</Button>
+            ]
+          }
+          <Button theme="outline" to="/editor">새 포스트</Button>
+        </div>
+      </div>
+    </header>
+  );
+
+  export default Header;
+
+  /*
+    수정 버튼을 누르면 /editor/?id=ID 페이지로 전환하도록 설정 함
+    삭제 버튼을 누르면 props로 전달받은 onRemvoe 함수를 호출하도록 설정함
+    이 함수는 추구 구현
+  */
+```
