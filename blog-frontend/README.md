@@ -1172,3 +1172,167 @@
     text-align: right;
   }
 ```
+
+#### 모달 상태 관리
+```javascript
+  /*
+    모달은 기본 상태에서는 보이지 않고, 유저가 삭제버튼을 누를 때만 보임
+    따라서 이 컴포넌트가 어떤 상황에서 나타나야 하는지 설정
+    ModalWrapper 컴포넌트에서 visible이란 props를 받아 와 상황에 따라 null을 구현하도록
+    렌더링 함수를 수정하기
+  */
+  // src/components/modal/ModalWrapper/ModalWrapper.js
+  (...)
+  class ModalWrapper extends Component {
+    render() {
+      const { children, visible } = this.props;
+      if(!visibe) return null;
+      (...)
+    }
+  }
+  /*
+    이렇게 하면 visible 값이 true일 때만 컴포넌트가 보이기 때문에 화면에는 나타나지 않는다.
+
+    리덕스 모듈 중 base.js 파일을 수정
+    이 모듈은 모달의 가시성을 관리하며,
+    추후 로그인 기능을 구현할 때 로그인 모달 상태와 로그인 상태도 관리한다.
+  */
+  // src/store/modules/base.js
+  import { createAction, handleAction } from 'redux-actions';
+  import { Map } from 'immutable';
+  import { pender } from 'redux-pender';
+
+  // action types
+  const SHOW_MODAL = 'base/SHOW_MODAL';
+  const HIDE_MODAL = 'base/HIDE_MODAL';
+
+  // action creators
+  export const showModal = createAction(SHOW_MODAL);
+  export const hideModal = createAction(HIDE_MODAL);
+
+  const initalState = Map({
+    // 모달의 가시성 상태
+    modal: Map({
+      remove: false,
+      login: false  // 추후 구현할 로그인 모달
+    })
+  });
+
+  // reducer
+  export default handleACtions({
+    [SHOW_MODAL]: (state, action) => {
+      const { payload: modalName } = action;
+      return state.setIn(['modal', modalName], true);
+    },
+    [HIDE_MODAL]: (state, action) => {
+      const { payload: modalName } = action;
+      return state.setIn(['modal', modalName], false);
+    }
+  }, initialState);
+  /*
+    SHOW_MODAL 과 HIDE_MODAL 액션을 만든다.
+    이 액션은 주어진 payload 값에 따라서 modal Map 내부에 있는 값을 true 또는 false로 전환한다.
+    굳이 액션을 두 개로 나누지 않고, SET_MODAL_VISIBILITY 같은 액션을 만들어 payload 부분에
+    modalName visible 값을 받아 와 구현해도 무방
+  */
+
+  // AskRemoveModalConainer.js
+  import React, { Component } from 'react';
+  import { connect } from 'react-redux';
+  import { bindActionCreators } from 'redux';
+  import * as baseActions from 'store/modules/base';
+  import * as postAtions from 'store/modules/post';
+  import AskRemoveModal from 'components/modal/AskRemoveModal';
+
+  class AskRemoveModalContainer extends Component {
+    handleCancel = () => {
+
+    }
+    handleConfirm = () => {
+
+    }
+    render() {
+      const { visible } = this.props;
+      const { handleCancel, handleConfirm } = this;
+
+      return (
+        <AskRemoveModal visible={visible} onCancel={handleCancel} onConfirm={handleConfirm}></AskRemoveModal>
+      );
+    }
+  }
+
+  export default connet(
+    (state) => ({
+      visible: state.base.getIn(['modal', 'remove'])
+    }),
+    (dispatch) => ({
+      BaseAtion: bindActionCreators(baseActions, dispatch),
+      PostAction: bindActionCreators(postActions, dispatch)
+    })
+  )(AskRemoveModalContainer);
+
+  /*
+    visible 값을 리덕스에서 받아 와 AskRemoveModal에 전달했으며, base와 post 모듈의 액션들은 미리 연결해 놓았다.
+    그리고 확인 버튼을 누르면 실행하는 handleConfirm과 취소 버튼을 누르면 실행하는 handleCancel 메서드에 비어 있는 함수를 미리 설정해 놓고, 이를 onConfirm/onCancel 이름으로 AskRemoveModal에 전달하기
+
+    그리고 이렇게 넣은 props를 AskRemoveModal에 반영한다.
+  */
+  // src/components/modal/AskRemoveModal/AskRemoveModal.js
+  (...)
+  const AskRemoveModal = ({visible, onConfirm, onCancel}) => (
+    <ModalWrapper visible={visible}>
+      <div classNmae={cx('question')}>
+        <div className={cx('title')}>포스트 삭제</div>
+        <div classsName={cx('description')}>이 포스트를 정말로 삭제 하시겠습니까?</div>
+      </div>
+      <div className={cx('options')}>
+        <Button theme="gray" onClick={onCancel}>취소</Button>
+        <Button onClick={onConfirm}>삭제</Button>
+      </div>
+    </ModalWrapper>
+  );
+
+  export default AskRemoveModal;
+
+  // src/pages/PostPage.js
+  (...)
+  import AskRemoveModalContainer from 'containers/modal/AskRemoveModalContainer';
+
+  const PostPage = ({ match }) => {
+    const { id } = match.params;
+    return (
+      <PageTemplate>
+        <Post id={id}></Post>
+        <AskRemoveModalContainers></AskRemoveModalContainers>
+      </PageTemplate>
+    );
+  };
+
+  export default PostPage;
+
+  /*
+    HeaderContainer 컴포넌트에서 만들어 둔 handleRemove 메서드를 호출하면 모달을 띄우도록 코드를 입력
+  */
+  (...)
+  import * as bindActions from 'store/modules/base';
+  import { connect } from 'react-redux';
+  import { bindActionCreators } from 'redux';
+
+  class HeaderContainer extends Component {
+    handleRemove = () => {
+      const { BaseActions } = this.props;
+      BaseActions.showModal('remove');
+    }
+
+    render() {
+      (...)
+    }
+  }
+
+  export default connect(
+    (state) => ({}),
+    (dispatch) => ({
+      BaseActions: bindActionsCreators(baseActions, dispatch);
+    })
+  )(withRouter(HeaderContainer));
+```
