@@ -437,3 +437,48 @@
 
   // 객체를 URL 쿼리 문자열로 변환할 때는 이처럼 queryString.stringify 함수를 사용
 ```
+
+### list 모듈 생성
+```javascript
+  /*
+    getPostList API를 호출할 때 필요한 액션과 상태 관리 로직들을 list.js 모듈 생성
+    이 모듈 상태에는 포스트 목록 데이터가 들어 있는 posts 값과 마지막 페이지를 알려주는 lastPage 값이 들어 있다.
+
+    Last-Page라는 커스텀 HTTP 헤더를 넣어 응답하도록 코드를 작성했으나 axios에서는 소문자 헤더를 읽어 오므로
+    action.payload.headers['last-page'] 값을 읽어 온다.
+    추가로 해당 값은 문자열 형태로 들어오니 이 값을 parstInt를 사용하여 숫자로 변환한다.
+  */
+  // src/store/modules/list.js
+  import { createAction, handleAction } from 'redux-actions';
+  
+  import { Map, List, fromJS } from 'immutable';
+  import { pender } from 'redux-pender';
+
+  import * as api from 'lib/api';
+
+  // action types
+  const GET_POST_LIST = 'list/GET_POST_LIST';
+
+  // action creators
+  export const getPostList = creationAction(GET_POST_LIST, api.getPostList, meta => meta);
+
+  // initial state
+  const initialState = Map({
+    posts: List(),
+    lastPage: null
+  });
+
+  // reducer 
+  export default handleActions({
+    ...pender({
+      type: GET_POST_LIST,
+      onSuccess: (state, action) => {
+        const { data: posts } = action.payload;
+
+        const lastPage = action.payload.headers['last-page'];
+        return state.set('posts', fromJS(posts))
+                    .set('lastPage', parseInt(lastPage, 10));
+      }
+    })
+  }, initialState);
+```
