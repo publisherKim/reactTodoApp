@@ -1117,3 +1117,58 @@
 
   export default PostPage;
 ```
+
+#### AskRemoveModal 컴포넌트 생성
+```javascript
+  /*
+    이제 이 모달에서 보일 내용을 설정하기
+    이 컴포넌트는 두 가지 영역으로 나뉜다.
+    위에는 모달 제목과 내용이 있고,
+    아래에는 유저가 선택할 수 있는 버튼이 있다.
+  */
+  // src/components/modal/AskRemoveModal/AskRemoveModal.js
+  import React from 'react';
+  import styles from './AskRemoveModal.scss';
+  import classNames from 'classnames/bind';
+  import ModalWrapper from 'components/modal/ModalWrapper';
+  import Button from 'components/common/Button';
+
+  const cx = classNames.bind(styles);
+
+  const AskRemoveModal = () => (
+    <ModalWrapper>
+      <div className={cx('question')}>
+        <div className={cx('title')}>포스트 삭제</div>
+        <div className={cx('description')}>이 포스트를 정말로 삭제하시겠습니까?</div>
+      </div>
+      <div className={cx('options')}>
+        <Button theme="gray">취소</Button>
+        <Button>삭제</Button>
+      </div>
+    </ModalWrapper>
+  );
+
+  export default AskRemoveModal;
+```
+```scss
+  // src/components/modal/AskRemoveModal/AskRemoveModal.scss
+  @import 'utils';
+
+  .question {
+    background: white;
+    padding: 2rem;
+    .title {
+      font-size: 1.25rem;
+      font-weight: 500;
+    }
+    .description {
+      margin-top: 0.25rem;
+    }
+  }
+
+  .options {
+    padding: 1rem;
+    background: $oc-gray-1;
+    text-align: right;
+  }
+```
