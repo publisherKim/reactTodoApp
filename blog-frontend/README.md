@@ -1005,3 +1005,115 @@
   // 이제 수정 모드일 떄는 다음과 같이 수정하기 버튼이 나타남
   // 수정 클릭시 내용이 변경된 포스트 페이지로 이동한다.
 ```
+
+### 삭제 기능 구현
+```
+  이 프로젝트에서 포스트와 관련된 마지막 기능인 삭제 기능을 구현하기
+  삭제 기능은 포스트 페이지에서 수정 버튼 오른쪽에 있는 삭제 버튼을 누르면 발생한다.
+  모달 팝업 알림 띄워주기
+```
+
+#### ModalWrapper와 AskRemovModal 컴포넌트 생성
+```javascript
+  /*
+    ModalWrapper 컴포넌트를 만들어 포스트 삭제 모달을 구현하기
+      - state가 있는 클래스형 컴포넌트
+      - 전체 화면을 불투명한 회색 배경으로 바꾸고 그 위에 흰색 박스를 보여 준다.
+      - 모달의 가시성 상태와 전환 효과 상태를 관리하기
+
+    ModalWrapper 컴포넌트는 나중에 비밀번호 로그인을 구현할 때 로그인 모달을 만드는 과정에서 재사용한다.
+
+    components 디렉터리에 modal 디렉터리를 만든 후 ModalWrapper 컴포넌트를 생성
+  */
+  // src/components/modal/ModalWrapper/ModalWrapper.js
+  import React, { Component } from 'react';
+  import styles from './ModalWrapper.scss';
+  import classNames from 'classNames/bind';
+
+  const cx = classNames.bind(styles);
+
+  class ModalWrapper extends Component {
+    render() {
+      const { children } = this.props;
+      return (
+        <div>
+          <div className={cx('gray-background')}></div>
+          <div className={cx('modal-wrapper')}>
+            <div className={cx('modal')}>
+              {children}
+            </div>
+          </div>
+        </div>
+      )
+    }
+  }
+
+  export default ModalWrapper;
+
+  /*
+    이 컴포넌트는 children props를 받아 와 modal 엘리먼트 내부에서 보여준다. 상태관리는 나중에 하고, 
+    지금은 컴포넌트 layout 부터 만든다.
+  */
+```
+```scss
+  @import 'utils';
+  
+  .gray-background {
+    background: rgba(100, 100, 100, 0.5);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 5;
+  }
+
+  .modal-wrapper {
+    z-index: 10;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    .modal {
+      @include material-shadow(3, 0.5);
+      background: white;
+    }
+  }
+```
+```javascript
+  /*
+    AskRemoveModal 컴포넌트를 modal 디렉토리에 만든다.
+    ModalWrapper 컴포넌트를 불러와 children 부분에는 "내용"이라는 텍스트를 넣어 렌더링한다.
+  */
+  // src/components/modal/AskRemoveModal/AskRemoveModal.js
+  import React from 'react';
+  import styles from './AskRemoveModal.scss';
+  import classNames from 'classNames/bind';
+  import ModalWrapper from 'components/modal/ModalWrapper';
+
+  const cx = classNames.bind(styles);
+
+  const AskRemoveModal = () => (
+    <ModalWrapper>
+      내용
+    </ModalWrapper>
+  )
+
+  export default AskRemoveModal;
+
+  // PostPage에 불러와 렌더링하기
+  // src/pages/PostPage.js
+  import AskRemoveModal from 'components/modal/AskRemoveModal';
+  (...)
+  const PostPage = ({match}) => {
+    const { id } = match.params;
+    return (
+      <PageTemplate>
+        <Post id={id}></Post>
+        <AskRemoveModal></AskRemoveModal>
+      </PageTemplate>
+    );
+  }
+
+  export default PostPage;
+```
