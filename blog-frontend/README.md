@@ -482,3 +482,163 @@
     })
   }, initialState);
 ```
+
+### ListContainer 컴포넌트 생성
+```javascript
+  /*
+    포스트 리스트 관련 리덕스 상태와 액션들이 연동된 컨테이너 컴포넌트인 ListContainer를 만들기
+    컴포넌트 내부에는 PostList와 Pagination 컴포넌트가 내장
+
+    이 컴포넌트는 나중에 ListPage에서 tag 값과 page  값을 전달 받음
+    포스트 리를 불러오는 API를 호출하고, 데이터를 PostList와 Pagination에 
+    넣어주고, page 값이 변하여 리스트를 새로 불러오도록 코드를 작성
+  */
+  // src/containers/list/ListContainer.js
+  import React { Component } from 'react';
+  import PostList from 'components/list/PostList';
+  import Pagination from 'components/list/Pagination';
+  import { connect } from 'react-redux';
+  import { bindActionCreators } from 'redux';
+  import * as listActions from 'store/modules/list';
+
+  class ListContainer extends Component {
+    getPostList = () => {
+      // 페이지와 태그 값을 부모에게 받아 온다.
+      const { tag, page, ListActions } = this.props;
+      ListActions.getPostList({
+        page,
+        tag
+      });
+    }
+
+    componentDidMount() {
+      this.getPostList();
+    }
+
+    componentDidUpdate(prevProps, pervState) {
+      // 페이지가 바뀔 때  리스트를 다시 불러온다.
+      if(prevProps.page !== this.props.page || prevProps.tag !== this.props.tag) {
+        this.getPostList();
+        document.documentElement.scrollTop = 0;
+      }
+    }
+
+    render() {
+      const { loading, posts, page, lastPage, tag } = this.props;
+      if(loading) return null;  // 로딩 중에는 아무것도 보여 주지 않는다.
+      return (
+        <div>
+          <PostList posts={posts}></PostList>
+          <Pagination page={page} lastPage={lastPage} tag={tag}></Pagination>
+        </div>
+      )
+    }
+  }
+
+  export default connect(
+    (state) => ({
+      lastPage: state.list.get('lastPage'),
+      posts: state.list.get('posts'),
+      loading: state.pender.pending['list/GET_POST_LIST']
+    }),
+    (dispatch) => ({
+      ListActions: bindActionCreators(listActions, dispatch)
+    })
+  )(ListContainer);
+
+  /*
+    이 컴포넌트를 ListPage에 불러와 PostList와 Pagination 컴포넌트를 대체한다.
+    그리고 tag 값과 page 값을 params에서 읽어 와 컨테이너 컴포넌트로 전달한다.
+
+    page가 존재하지 않을 때는 기본값을 1로 설정
+  */
+  // src/pages/ListPage.js
+  import React from 'react';
+  import PageTemplate from 'components/common/PageTemplate';
+  import ListWrapper from 'components/list/ListWrapper';
+  import ListContainer from 'containers/list/ListContainer';
+
+  const ListPage = ({match}) => {
+    // page의 기본 값을 1로 설정한다.
+    const { page = 1, tag } = match.params;
+
+    return (
+      <PageTmeplate>
+        <ListWrapper>
+          <ListContainer
+            page={parseInt(page, 10)}
+            tag={tag}
+          ></ListContainer>
+        </ListWrapper>
+      </PageTmeplate>
+    )
+  }
+
+  export default ListPage;
+```
+
+### PostList 컴포넌트 데이터 렌더링
+```javascript
+  /*
+    임시로 텍스트를 직접 넣어서 보이던 부분을 props로 받아 온 데이터 채움
+    PostList  내부에 있는 PostItem 컴포넌트에서는 포스트 내용의 일부를 보여주기
+    이 부분에서는 마크다운 html이 변환되지 않으므로 마크다운에서 사용하는 #, **, ``` > 등
+    특수문자가 고스란히 표현되는 문제가 있음 remove-markdown 라이브러리를 사용하여 이름 숨긴다.
+    이 라이브러리는 마크다운에서 사용한 특수 문자를 제거해 준다. 
+    
+    yarn add remove-markdown
+  */
+  // src/components/list/PostList/PostList.js
+  import React from 'react';
+  import styles from './PostList.scss';
+  import classNames from 'classnames/bind';
+  import { Link } from 'react-router-dom';
+  import moment from 'moment';
+  import removeMd from 'remove-markdown';
+
+  const cx = classNames.bind(styles);
+
+  const PostItem = ({title, body, publishedDate, tags, id}) => {
+    const tagList = tags.map(
+      tag => <Link key={tag} to={`/tag/${tag}`}>#{tag}</Link>
+    );
+
+    return (
+      <div className={cx('post-item')}>
+        <h2><Link to={`/post/${id}`}>{title}</Link></h2>
+        <div className={cx('date')}>
+          {moment(publishedDate).format('li')}
+        </div>
+        <p>{removeMd(body)}</p>
+        <div className={cx('tags')}>
+        </div>
+      </div>
+    )
+  };
+
+  const PostList = ({ posts }) => {
+    const PostList = posts.map(
+      (post) => {
+        const { _id, title, body, publishedDate, tags } = post.toJS();
+        return (
+          <PostItem
+            title={title}
+            body={body}
+            publishedDate={publishedDate}
+            tags={tags}
+            key={_id}
+            id={_id}
+          ></PostItem>
+        );
+      }
+    );
+
+    return (
+      <div className={cx('post-list')}>
+        {postList}
+      </div>
+    );
+  };
+
+  export default PostList;
+```
