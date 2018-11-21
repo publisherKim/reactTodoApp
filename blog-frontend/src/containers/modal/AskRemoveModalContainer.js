@@ -1,13 +1,15 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import { withRouter } from 'react-router-dom';
 import * as baseActions from 'store/modules/base';
 import * as postActions from 'store/modules/post';
 import AskRemoveModal from 'components/modal/AskRemoveModal';
 
 class AskRemoveModalContainer extends Component {
   handleCancel = () => {
-
+    const { BaseActions } = this.props;
+    this.props.BaseActions.hideModal('remove');
   };
 
   handleConfirm = () => {
@@ -17,7 +19,6 @@ class AskRemoveModalContainer extends Component {
   render() {
     const { visible } = this.props;
     const { handleCancel, handleConfirm } = this;
-
     return (
       <AskRemoveModal visible={visible} onCancel={handleCancel} onConfirm={handleConfirm}></AskRemoveModal>
     );
@@ -32,4 +33,4 @@ export default connect(
     BaseActions: bindActionCreators(baseActions, dispatch),
     PostActions: bindActionCreators(postActions, dispatch)
   })
-)(AskRemoveModalContainer);
+)(withRouter(AskRemoveModalContainer));

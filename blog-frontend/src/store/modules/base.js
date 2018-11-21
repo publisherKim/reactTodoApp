@@ -12,6 +12,7 @@ export const hideModal = createAction(HIDE_MODAL);
 
 // initial state
 const initialState = Map({
+  // 모달의 가시성 상태
   modal: Map({
     remove: false,
     login: false // 추후 구현할 로그인 모달
