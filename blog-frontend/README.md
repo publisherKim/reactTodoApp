@@ -1339,3 +1339,73 @@
     })
   )(withRouter(HeaderContainer));
 ```
+
+### 삭제 모달 버튼 기능 구현
+```javascript
+  /*
+    모달에서 사게 버튼을 누르면 현재 보고 있는 포스트를 삭제하고, 취소 버튼을 누르면 모달이 종료 하도록 설정
+
+    취소 버튼부터 구현하기
+
+    AskRemoveModalContainer 컴포넌트의 handleCancel 메서드에서 BaseActions.hideModal을 호출한다.
+  */
+  // src/containers/modal/AskRemoveModalontainer.js
+  handleCancel = () => {
+    const { BaseActions } = this.porps;
+    BaseActions.hideModal('remove');
+  }
+
+  // 삭제 버튼 구현하기 api.js 파일에 포스트 삭제 API 함수를 만들고 액션을 준비한후 handleConfirm에서 호출
+  // src/lib/api.js
+  (...)
+  export const removePost = (id) => axios.delete(`/api/posts/${id}`);
+  // src/store/modules/post.js
+  (...)
+  // action types
+  const GET_POST = 'post/GET_POST';
+  const REMOVE_POST = 'post/REMOVE_POST';
+
+  // action creators
+  export const getPost = createAction(GET_POST, api.getPost);
+  export const removePost = createAction(REMOVE_POST, api.removePost);
+  (...)
+  /*
+    삭제 액션은 post 모듈에서 작성하고, 리듀서에 상태 관리는 따로 하지 않다도 된다.
+
+    액션을 작성한 후 AskRemoveModalContainer에서 라우터 정보를 조회할 수 있도록 코드 아래쪽에서
+    컴포넌트를 withRouter로 감싸주고 handleConfirm에서 방금 만든 액션 생성 함수에 현재 포스트 아이디를 파라미터로 넣어 호출한다.
+    마지막으로 삭제 요청이 완료된 후에는 웹 사이트로 주소를 이동시키도록 코드를 작성한다.
+  */
+  // src/containers/modal/AskRemoveModalContainer.js
+  (...)
+  import { withRouter } from 'reat-router-dom';
+
+  class AskRemoveModalContainer extends Component {
+    (...)
+    handleConfirm = async () => {
+      const { BaseActions, PostActions, history, match } = this.props;
+      const { id } = match.params;
+
+      try {
+        // 포스트 삭제 후, 모달 닫고 웹 사이트로 이동
+        await PostActions.removePost(id);
+        BaseActions.hideModal('remove');
+        history.push('/');
+      } catch(e) {
+        console.log(e);
+      }
+    }
+    (...)
+  }
+
+  export default connect(
+    (state) => ({
+      visible: state.base.getIn(['modal', 'remove'])
+    }),
+    (dispatch) => ({
+      BaseActions: bindActionCreators(baseActions, dispatch),
+      PostAction: bindActionCreators(postAction, dispatch)
+    })
+  )(withRouter(AskRemoveModalContainer));
+  // 삭제 기능 완료
+```

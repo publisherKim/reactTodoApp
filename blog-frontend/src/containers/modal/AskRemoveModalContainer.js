@@ -9,11 +9,20 @@ import AskRemoveModal from 'components/modal/AskRemoveModal';
 class AskRemoveModalContainer extends Component {
   handleCancel = () => {
     const { BaseActions } = this.props;
-    this.props.BaseActions.hideModal('remove');
+    BaseActions.hideModal('remove');
   };
 
-  handleConfirm = () => {
+  handleConfirm = async () => {
+    const { BaseActions, PostActions, history, match } = this.props;
+    const { id } = match.params;
 
+    try {
+      await PostActions.removePost(id);
+      BaseActions.hideModal('remove');
+      history.push('/');
+    } catch(e) {
+      console.log(e);
+    }
   };
   
   render() {
