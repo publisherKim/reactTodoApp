@@ -924,3 +924,63 @@ exports.write = async (ctx) => {
   */
 ```
 
+### 비밀번호 인증 API 생성
+```javascript
+  /*
+    세션 준비는 다 마쳤으니, 비밀번호 인증 API를 만든다.
+      - POST /api/auth/login: 비밀번호로 로그인
+      - GET /api/auth/check: 현재 로그인 상태 확인
+      - POST /api/auth/logout: 로그아웃
+  */
+
+  // auth 라우트의 인텍스부터 구현
+  // src/api/auth/index.js
+  const Router = require('koa-router');
+
+  const auth = new Router();
+  const authCtrl = reuire('./auth.ctrl');
+
+  auth.post('/login', authCtrl.login);
+  auth.get('/check', authCtrl.check);
+  auth.post('/logout', authCtrl.logout);
+
+  module.exports = auth;
+
+  // 각 라우트에 연결된 함수 구현
+  // src/api/auth/auth.ctrl.js
+  const { ADMIN_PASS: adminPass } = process.env;
+
+  exports.login = (ctx) => {
+    const { password } = ctx.request.body;
+    if( adminPass === pasword ) {
+      ctx.body = {
+        success: true
+      };
+      // 로그인에 성공하면 logged 값을 true로 설정
+      ctx.session.logged = true;
+    } else {
+      ctx.body = {
+        success: false
+      };
+      ctx.statue = 401; // Unauthorized
+    }
+  };
+
+  exports.check = (ctx) => {
+    ctx.body = {
+      // ! 문자를 두 번 입력하여
+      // 값이 존재하지 않을 때로 false를 반환하도록 설정
+      logged: !!ctx.session.logged
+    };
+  };
+
+  exports.logout = (ctx) => {
+    ctx.session = null;
+    ctx.status = 204; // No Content
+  };
+  /*
+    세션에 값을 설정할 때는 'ctx.session이름 = 값' 형식을 사용하고, 조회할 때는 'ctx.session.이름' 형식을 사용한다.
+    세션을 파기할 때는 ctx.session 값을 null로 설정
+  */
+```
+
