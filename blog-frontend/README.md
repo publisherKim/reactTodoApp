@@ -1409,3 +1409,134 @@
   )(withRouter(AskRemoveModalContainer));
   // 삭제 기능 완료
 ```
+
+### 모달 전환 효과 구현
+```scss
+  /*
+    전환 애니메이션 효과를 설정하면 좀 더 자연스럽게 모달이 나타나고 사라진다.
+    전환 효과는 CSS의 @keyframes를 사용하여 구현
+    @keyframes를 사용하여 전환 효과의 시작 부분, 마지막 부분의 스타일을 지정해 주면
+    스타일이 서서히 변화하면서 애니메이션 효과가 구현 된다.
+
+    ModalWrapper.scss 총 네 가지 종류의 @keyframes를 사용
+      - fadeIn: 투명도가 0% -> 100%
+      - fadeOut: 투명도가 100% -> 0%
+      - slideUp: 아래에서 위로 올라오는 효과
+      - slideDown: 위에서 아래로 내려가는 효과
+  */
+  // src/components/modal/ModalWrapper/ModalWrapper.scss
+  @import 'utils';
+
+  @keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+
+  @keyframes fadeOut {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+
+  @keyframes slideUp {
+    0% { transform: translateY(50vh); }
+    100% { transform: translateY(0); }
+  }
+
+  @keyframes slideDown {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(50vh); }
+  }
+  (...)
+  // gray-backround modal 클래스 내부에 &.enter 와 &.leave 클래스를 만들어 각각 알맞은 animation을 설정하기
+  // src/components/modal/ModalWrapper/ModalWrapper.scss
+  .gray-background {
+    (...)
+    &.enter {
+      animation: fadeIn 0.25s ease-in both;
+    }
+    &.leave {
+      animation: fadeOut 0.25s ease-in both;
+    }
+  }
+
+  .modal-wrapper {
+    (...)
+    .modal {
+      (...)
+      &.enter {
+        animation: slideUp 0.25s ease-in both;
+      }
+      &.leave {
+        animation: slideDown 0.25s ease-in both;
+      }
+    }
+  }
+  // ModalWrapper 컴포넌트에서 visible 값이 바뀌면 내부 state를 설정하여 enter 또는 leave 애니메이션을 적용시켜 본다.
+```
+```javascript
+  // src/components/modal/ModalWrapper/ModalWrapper.js
+  (...)
+  class ModalWrapper extends Component {
+    state = {
+      animate: false
+    }
+
+    startAnimation = () => {
+      // animate 값을 true로 설정 후
+      this.setState({
+        animate: true
+      });
+      // 250ms 이후 다시 false로 설정
+      setTimeout(() => {
+        this.setState({
+          animate: false
+        });
+      }, 250)
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+      if(prevProps.visible !== this.props.visible) {
+        this.startAnimation();
+      }
+    }
+
+    render() {
+      const { children, visible } = this.props;
+      const { animate } = this.state;
+
+      // visible과 animate 값이 둘 다 false일 때만
+      // null을 리턴
+      if(!visible && !animate) return null;
+
+      // 상태에 따라 애니메이션 설정
+      const animation = animate && (visible ? 'enter' : 'leave');
+
+      return (
+        <div>
+          <div className={cx('gray-background', animation)}></div>
+          <div className={cx('modal-wrapper')}>
+            <div className={cx('modal', animation)}>
+              {children}
+            </div>
+          </div>
+        </div>
+      );
+    }
+  }
+
+  export default ModalWrapper;
+  /*
+    startAnimation 메서드를 만들고, componentDidUpdate에서 visible 값이 바뀔 때마다
+    이 메서드를 호출하도록 설정한다.
+    startAnimation을 호출하면 내부 state인 animate 값을 true로 설정하고, 250ms 후에는 
+    다시 false로 설정한다. 여기에서 1ms는 0.001초이다.
+
+    animate가 true일 때는 visible 값에 따라서 'enter' 또는 'leave'를 배경 화면과
+    모달에 클래스로 넣어 준다. 애니메이션이 진행되는 동안에는 컴포넌트가 화면에서 사라지지 
+    않도록 visible 값과 animate 값이 둘 다 false일 때만 null을 리턴하도록 설정한다.
+
+    자, 이제 삭제 모달의 애니메이션 구현까지 끝났다. 제대로 구현했다면 모달이 아래에서 위로
+    솟아오르고, 취소 버튼을 누르면 다시 아래로 사라질 것이다.
+    이제 프로젝트의 마지막 단계인 관리자 로그인 인증 기능을 구현하기
+  */
+```
