@@ -1312,8 +1312,9 @@
 
   /*
     HeaderContainer 컴포넌트에서 만들어 둔 handleRemove 메서드를 호출하면 모달을 띄우도록 코드를 입력
-    아직도 this에 대해서 헤멘다. 헷갈린땐 이 블로그르 참고하자.
-    https://blueshw.github.io/2017/07/01/arrow-function/
+    아직도 this에 대해서 헤멘다. 헷갈린땐 이 블로그들을 참고하자.
+    https://hanjungv.github.io/2018-02-03-1_JS_arrow_function/
+    https://poiemaweb.com/es6-arrow-function
   */
   (...)
   import * as bindActions from 'store/modules/base';
