@@ -962,7 +962,7 @@ exports.write = async (ctx) => {
       ctx.body = {
         success: false
       };
-      ctx.statue = 401; // Unauthorized
+      ctx.status = 401; // Unauthorized
     }
   };
 
@@ -982,5 +982,21 @@ exports.write = async (ctx) => {
     세션에 값을 설정할 때는 'ctx.session이름 = 값' 형식을 사용하고, 조회할 때는 'ctx.session.이름' 형식을 사용한다.
     세션을 파기할 때는 ctx.session 값을 null로 설정
   */
+```
+
+### api 라우트에 auth 적용
+```javascript
+  // src/api/index.js
+  const Router = require('koa-router');
+  const posts = require('./posts');
+  const auth = require('./auth');
+
+  const api = new Router();
+
+  api.use('/posts', posts.routes());
+  api.use('/auth', posts.routes());
+
+  // 라우터 내보내기
+  module.exports = api;
 ```
 
