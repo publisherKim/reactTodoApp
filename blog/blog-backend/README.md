@@ -852,3 +852,75 @@ exports.write = async (ctx) => {
   백엔드는 결국 여러가지 조건에 따라 클라이언트에서 전달받은 데이터를 등록하고 조회하고 수정하는 것
   프로젝트 규모에 따라서 더욱 많은 종류의 모델과 API도 관리 가능
 ```
+
+# 21장 백엔드 구현 부분(로그인 인증) 
+
+## 관리자 로그인 인증 구현
+```
+  블로그의 관리자만 포스트를 작성, 수정, 삭제할 수 있는 권한을 부여할 수 있는 간단한
+  비밀번호 인증 시스템을 구현하기
+
+  이 기능은 서버에서 세션과 인증된(signed) 쿠키를 사용하여 구현한다.
+  인증된 쿠키는 쿠키를 설정할 때, 쿠키 내용과 사전 설정한 비밀 키를 가지고 HMCA(해시 메시지 인증코드)를 생성하여 함께 보관하는 것
+  이것으로 유저가 쿠키를 변조하지 않았음을 검증할 수 있다.
+```
+
+### 서버에 세션 적용
+```javascript
+  /*
+    백엔드 서버에 세션을 사용하려면 koa-session 라이브러리를 설치해야 함
+    yarn add koa-session
+
+    이 라이브러리를 백엔드 서버에 적용하기 앞서 .env 파일에 두 가지 환경 변수를 설정한다.
+
+    첫 번째로 설정할 환경변수는 관리자 비밀번호 ADMIN_PASS이다. 나중에 로그인을 할 때 이 값을 사용한다.
+    두 번째로 설정할 환경변수는 COOKIE_SIGN_KEY 이다. 이 값은 인증된 쿠키를 만들 때 인증 키로 사용한다.
+    비밀번호 react123 
+    인증 키에는 숫자, 문자, 특수 문자를 포함
+
+    백엔드 프로젝트으의 .env 파일을 다음과 같이 수정한다.
+  */
+  // .env
+  PORT=4000
+  MOGNGO_URI=mongodb://localhost/blog
+  ADMIN_PASS=react123
+  COOKIE_SIGN_KEY=COOKIE$1GNK3Y
+
+  // index.js에서 koa-session을 불러오기
+  (...)
+  const session = require('koa-session');
+
+  const {
+    PORT: port = 4000,  // 값이 존재하지 않는다면 포트 4000번을 기본 값으로 사용
+    MONGO_URI: mongoURI,
+    COOKIE_SIGN_KEY: signKey
+  } = process.env;
+
+  (...)
+
+  const app = new Koa();
+
+  (...)
+
+  // 라우터 적용 전에 먼저 bodyParser 적용
+  app.use(bodyParser());
+
+  // 세션/키 적용
+  const sessionConfig = {
+    maxAge: 86400000, // 하루
+    // signed: true(기본으로 설정되어 있다.)
+  };
+
+  app.use(session(sessionConfig, app));
+  app.keys = [signKey];
+
+  (...)
+
+  /*
+    세션의 유효 기간은 하루로 설정
+    별도로 설정하지 않아도 signed옵션이 기본값으로 활성화됨
+    또 자바스크립트로는 접근할 수 없고 웹 브라우저의 네트워크 단에서만 조회 가능한 http 옵션도 기본 값으로 활성화 됨
+    koa-session의 기본 설정 값을 자세히 확인하고 싶다면 https://github.com/koajs/session 참고
+  */
+```
+
