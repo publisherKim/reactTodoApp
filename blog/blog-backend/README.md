@@ -998,5 +998,68 @@ exports.write = async (ctx) => {
 
   // 라우터 내보내기
   module.exports = api;
+
+  /*
+    - 로그인
+      POST http://localhost:4000/api/auth/login
+      {
+        "password": "react123"
+      }
+    응답:
+      {
+        "success": true
+      }
+
+    - 인증 상태 확인
+    GET http://localhost:4000/api/auth/check
+    응답:
+      {
+        "logged": true
+      }
+    
+    - 로그아웃
+    POST http://localhost:4000/api/auth/logout
+    응답: 공백
+  */
+```
+
+### 인증이 필요한 API 보호
+```javascript
+  /*
+    포스트 읽기를 제외한 모든 작업을 로그인했을 때만 수행할 수 있도록 코드를 수정
+    일반적으로 API의 컨트롤러 함수에서 ctx.session.logged 값이 true가 아니라면 작업을 중지하도록 구현한다.
+    하지만 이런 코드를 write, update, remove 함수에 모두 작성하면 코드가 중복
+
+    따라서 post, delete, patch API 라우트에서 checkObjectId 함수를 사전 수행하게 했던 것처럼,
+    checkLogin 함수를 만들어 API를 처리할 때 인증 상태를 확인한 후 작업을 계속 진행하도록 코드를 작성
+  */
+  // src/api/posts/posts.ctrl.js - checkLogin
+  exports.checkLogin = (ctx, next) => {
+    if(!ctx.session.logged) {
+      ctx.status = 401; // Unauthorized
+      return null;
+    }
+    return next();
+  }
+  
+  // get을 제외한 API 라우트들에 checkLogin을 넣기
+  // src/api/posts/index.js
+  const Router = require('koa-router');
+  const postCtrl = require('./posts.ctrl');
+
+  const posts = new Router();
+
+  posts.get('/', postsCtrl.list);
+  posts.get('/:id', postsCtrl.checkObjectId, postsCtrl.read);
+
+  posts.post('/', postsCtrl.checkLogin, postsCtrl.write);
+  posts.delete('/:id', postsCtrl.checkLogin, postsCtrl.hceckObjectId, postsCtrl.remove);
+  posts.patch('/:id', postsCtrl.checkLogin, postsCtrl.checkObjectId, postsCtrl.update);
+
+  module.exports = posts;
+
+  // checkLogin 적용된 API들은 로그인 상태가 아니라면 401 오류를 응답 한다.
+
+  // 다시 프론트 로그인 모달로 돌아간다.
 ```
 
