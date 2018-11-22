@@ -1976,3 +1976,143 @@
     잘못된 비밀번호 입력시 오류가 나는지 확인
   */
 ```
+
+### FooterContainer 완성
+```javascript
+  /*
+    로그인 상태 일 때는 FooterContainer에서 로그아웃을 할 수 있도록 현재 로그인 상태를 Footer로 전달하기
+    로그인 상태일 때는 로그아웃 API를 호출하고 새로 고침하도록 handleLoginClick메서드 실행하기
+  */
+  // src/containers/common/FooterContainer.js
+  (...)
+  class FooterContainer extends Component {
+    handleLoginClick = async() => {
+      const { BaseActions, logged } = this.props;
+      if(logged) {
+        try {
+          await BaseActions.logout();
+          window.location.reload();
+        } catch (e) {
+          console.log(e)
+        }
+        return;
+      }
+      BaseActions.showModal('login');
+      BaseActions.initializeLoginModal();
+    }
+    render() {
+      const { handleLoginClik } = this;
+      const { logged } = this.props;
+
+      return (
+        <Footer onLoginClick={handleLoginClick} logged={logged}></Footer>
+      );
+    }
+  }
+
+  export default connect(
+    (state) => ({
+      logged: state.base.get('logged')
+    }),
+    (dispatch) => ({
+      BaseActions: bindActionCreators(baseActions, dispatch)
+    })
+  )(FooterContainer);
+```
+
+### 페이지 로딩할 때의 로그인 상태 확인
+```javascript
+  /*
+    로그인 상태에서 페이지를 새로고침하면 상태가 초기화된다.
+    리덕스 스토어 안에 있는 상태는 페이지를 새로 불러왔을때 보존되지 않기 때문
+
+    현재 서버 세션상으로는 로그인 상태를 유지하기 때문에, 이전에 만든 checkLogin API를 호출하여 로그인 상태를 확인한 후 리덕스 스토어에 반영하기
+
+    이 작업은 Base 컴포넌트에서 수행한다. initialize 함수 작성하기
+  */
+  // src/containers/common/Base.js - initialize
+  initialize = async() => {
+    const { BaseActions } = this.props;
+    BaseActions.checkLogin();
+  }
+
+  /*
+    아이디어가 좋다 새로고침시마다 함수를 호출하는 식으로 로그인을 확인하다니!!
+    하지만 checkLogin API가 응답할 때까지는 클라이언트에서 로그아웃 상태로 간주한다.
+    따라서 유저가 로그인 했다면 새로고침을 해도 checkLogin이 응답할 때까지는 임시적으로 로그인 상태를 유지해야 함
+    이는 HTML5의 localStorage를 사용하여 구현 가능
+    localStorage에 값을 넣으면 페이지를 새로고침하거나 웹 브라우저를 닫았다 열어도 값을 유지한다.
+    하지만 주의할 점은 값이 문자열 형태로 들어가므로 객체, 숫자, Boolean등 값을 넣으면 JSON.stringify/JSON.parse를 사용하거나 문자열로 취급해야 한다.
+    로그인 상태를 설정할 수 있도록 TEMP_LOGIN 액션을 준비한다.
+  */
+  // src/store/modules/base.js
+  (...)
+
+  // action types
+  (...)
+  const TEMP_LOGIN = 'base/TEMP_LOGIN';
+  
+  // action creators
+  (...)
+  export const tempLogin = createAction(TEMP_LOGIN);
+
+  // initial state
+  (...)
+
+  // reducer
+  export default handleACtions({
+    (...)
+    [TEMP_LOGIN]: (state, action) => {
+      return state.set('logged', true);
+    }
+  }, initalState)
+
+  /*
+    이제 상황에 따라 localStorage에 값을 넣거나 조회하기
+    먼저 로그인 성공했을 때 localStorage의 logged 값을 "true"로 설정하기
+  */
+  // src/containers/modal/LoginModalContainer.js - handleLogin
+  handleLogin = async() => {
+    const { BaseActions, password } = this.props;
+    try {
+      // 로그인 시도, 성공하면 모달 닫기
+      await BaseActions.login(password);
+      BaseActions.hideModal('login');
+      localStorage.logged = "true";
+    } catch(e) {
+      console.log(e);
+    }
+  }
+  /*
+    페이지를 로딩할 때 localStorage의 logged 값을 불러온 후 이 값에 따라 
+    TEMP_LOGIN 액션을 호출한다.
+  */
+  // src/containers/common/Base.js - initialize
+  initialize = () => {
+    const { BaseActions } = this.props;
+    if(localStorage.logged === "true") {
+      BaseActions.tempLogin();
+    }
+    BaseActions.checkLogin();
+  }
+  /*
+    로그인했을때 localStorage에 로그인 상태를 저장하여 이 상태가 존재한다면 checkLogin API가 응답하기 전부터 로그인 중인것으로 간주한다.
+
+    이는 임시적으로 로그인 상태로 만든 것이므로, 서버 세션에서 로그인 상태가 아니라면 다시 로그인
+    상태가 비활성화 된다.
+  */
+  // src/FooterContainer.js
+  /*
+    로그 아웃 했을 때 localStorage: logged 삭제하기
+  */
+  if(logged) {
+    try {
+      await BaseActions.logout();
+      localStorage.removeItem('logged');
+      window.location.reload();
+    } catch(e) {
+      console.log(e);
+    }
+    return;
+  }
+```
