@@ -1826,3 +1826,153 @@
 
   export default PageTemplate;
 ```
+
+### 로그인 기능 구현
+```javascript
+  /*
+    로그인 모달을 띄웠으니 로그인 API를 연동해 주기
+    API 추가
+  */
+  // src/lib/api.js
+  (...)
+  export const login = (password) => axios.get('/api/auth/login', { password });
+  export const checkLogin = () => axios.get('api/auth/check');
+  export const logout = () => axios.get('api/auth/logout');
+
+  /*
+    이제 base 리덕스 모듈을 열어 이 함수들을 사용하는 액션 만들기
+
+    로그인 모달에 있는 인풋 값을 설정하는 액션과 로그인 모달 상태를 초기화 하는 액션 만들기
+  */
+  // src/store/modules/base.js
+  (...)
+  import * as api from 'lib/api';
+
+  // action types
+  const LOGIN = 'base/LOGIN';
+  const LOGOUT = 'base/LOGOUT';
+  const CHECK_LOGIN = 'base/CHECK_LOGIN';
+  const CHANGE_PASSWORD_INPUT = 'base/CHANGE_PASSWORD_INPUT';
+  const INITALIZE_LOGIN_MODAL = 'base/INITALIZE_LOGIN_MODAL';
+
+  // action creators
+  (...)
+
+  export const login = createAction(LOGIN, api.login);
+  export const logout = createAction(LOGOUT, api.logout);
+  export const checkLogin = createAction(CHECK_LOGIN, api.checkLogin);
+  export const changePasswordInput = createAction(CHANGE_PASSWORD_INPUT);
+  export const initializeLoginModal = createAction(INITIALIZE_LOGIN_MODAL);
+
+  // initial state
+  const initialState = Map({
+    // 로그인 모달 상태
+    loginModal: Map({
+      password: '',
+      error: false
+    }),
+    logged: false // 현재 로그인 상태
+  });
+
+  // reducer
+  export default handleActions({
+    (...)
+    ...pender({
+      type: LOGIN,
+      onSuccess: (state, action) => { // 로그인 성공할 때
+        return state.set('logged', true);
+      },
+      onError: (state, action) => { // 오류가 발생할 때
+        return state.setIn(['loginModal', 'error'], true)
+                    .setIn(['loginModal', 'password'])
+      }
+    }),
+    ...pender({
+      type: CHECK_LOGIN,
+      onSuccess: (state, action) => {
+        const { logged } = action.payload.data;
+        return state.set('logged', logged);
+      }
+    }),
+    [CHAGE_PASSWORD_INPUT]: (state, action) => {
+      const { payload: value } = action;
+      return state.setIn('loginModal', 'password'], value);
+    },
+    [INITIALIZE_LOGIN_MODAL]: (state, action) => {
+      // 로그인 모달의 상태를 초기 상태로 설정(텍스트/오류 초기화)
+      return state.set('loginModal', initialState.get('loginModal'));
+    }
+  }, initialState)
+
+  /*
+    이제 로그인 기능을 구현할 준비가 끝났으니 컴포넌트를 수정하기
+    먼저 LoginModalContainer쪽에 아직 구현하지 않은 메서드를 완성하기
+    이 컴포넌트에서 필요한 리덕스 스토어 안에 있는 정보를 가져오려면,
+    LoginModal의 error 값과 password 값을 받아 와서 컴포넌트 파일 아래쪽 connect 부분의 props에 넣기
+  */
+  // src/containers/modal/LoginModalContainer.js - 내부 메서드
+  (...)
+  class LoginModalContainer extends Component {
+    handleLogin = async() => {
+      const { BaseActions, password } = this.props;
+      try {
+        // 로그인 시도, 성공하면 모달 닫기
+        await BaseActions.login(password);
+        BaseActions.hideModal('login');
+      } catch(e) {
+        console.log(e);
+      }
+    }
+    handleCancel = () => {
+      const { BaseActions } = this.props;
+      BaseActions.hideModal('login');
+    }
+    handleChange = (e) => {
+      const { value } = e.target;
+      const { BaseActions } = this.props;
+      BaseActions.changePasswordInput(value);
+    }
+    handleKeyPress = (e) => {
+      // 엔터 키를 누르면 로그인 호출
+      if(e.key === 'Enter') {
+        this.handleLogin();
+      }
+    }
+    render() {
+      const {
+        handleLogin, handleCancel, handleCahnge, handleKeyPress
+      } = this;
+      const { visible, error, password } = this.props;
+
+      return (
+        <LoginModal
+          onLogin={handleLogin}
+          onCancel={handleCancel}
+          onChange={handleChange}
+          onKeyPress={handlKeyPress}
+          visible={visible}
+          error={error}
+          pssword={password}
+        ></LoginModal>
+      )
+    }
+  }
+
+  export default connect(
+    (state) => ({
+      visible: state.base.getIn(['modal', 'login']),
+      password: state.base.getIn(['loginModal', 'password']),
+      error: state.base.getIn(['loginModal', 'error'])
+    }),
+    (dispatch) => ({
+      BaseActions: bindActionCreators(baseActions, dispatch)
+    })
+  )(LoginModalContainer);
+
+  /*
+    이제 페이지 아래쪽에 있는 관리자 로그인 버튼을 눌러 로그인 모달 띄우기
+    비밀번호 입력후 로그인 확인하기
+    모달이 자동으로 닫히며 정상 동작
+    잘못된 비밀번호 입력시 오류가 나는지 확인
+  */
+```
