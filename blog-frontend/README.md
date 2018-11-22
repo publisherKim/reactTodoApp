@@ -1540,3 +1540,289 @@
     이제 프로젝트의 마지막 단계인 관리자 로그인 인증 기능을 구현하기
   */
 ```
+
+###  로그인 모달 생성
+```javascript
+  /*
+    다시 프론트엔드 프로젝트로 돌아와서 로그인 모달을 만들기
+    ModalWrapper 컴포넌트를 재사용하자.
+  */
+  // src/components/modal/LoginModal/LoginModal.js
+  import React from 'react';
+  import styles from './LoginModal.scss';
+  import classNames from 'classnmaes/bind';
+  import ModalWrapper from 'components/modal/ModalWrapper';
+
+  const cx = classNames.bind(styles);
+
+  const LoginModal = ({
+    visible, password, error, onCancel, onLogin, onChange, onKeyPress
+  }) => (
+    <ModalWrapper visible={visible}>
+      <div className={cx('from')}>
+        <div onClick={onCancel} className={cx('close')}>&times;</div>
+        <div className={cx('title')}>로그인</div>
+        <div className={cx('description')}>관리자 비밀번호를 입력하세요</div>
+        <input autoFocus type="password" placeholder="비밀번호 입력" value={password} onChange={onChange} onKeyPress={onKeyPress} />
+        { error && <div className={cx('error')}>로그인 실패</div> }
+        <div className={cx('login')} onClick={onLogin}>로그인</div>
+      </div>
+    </ModalWrapper>
+  );
+
+  export default LoginModal;
+  /*
+    전달받은 props가 7개
+    password: 로그인 창에 있는 input의 value 값이며 나중에 base 모듈에서 가져옴
+    error 값은 유저가 잘못된 비밀번호를 입력햇을 때 오류를 표시하는 값
+
+    onCancel은 닫기 버튼(&times: 문자는 x이다.)을 누르면 실행하는 함수고,
+    onLogin은 로그인 버튼을 누르면 실행하는 함수이다.
+    onChange와 onKeyPress는 비밀번호를 입력할 떄 호출되는 함수이다.
+    onChange 함수는 값을 변경하려고 설정했고, onKeyPress 함수는 나중에 버튼 클릭뿐만 아니라
+    인풋 입력 후 Enter를 눌렀을때도 로그인 작업을 수행할고 설정한다.
+  */
+```
+```scss
+  // src/components/modal/LoginModal/LoginModal.scss
+  @import 'utils';
+
+  .form {
+    background: white;
+    padding: 2rem;
+    position: relative;
+    padding-top: 2.5rem;
+    width: 20rem;
+    .close {
+      line-height: 2rem;
+      font-size: 2rem;
+      position: absolute;
+      right: 1rem;
+      top: 0.5rem;
+      cursor: pointer;
+      &:hover {
+        color: $oc-gray-6;
+      }
+    }
+    .title {
+      font-size: 1.25rem;
+      font-weight: 500;
+    }
+    .description {
+      margin-top: 0.25rem;
+    }
+    .error {
+      margin-top: 0.5rem;
+      margin-bottom: 0.5rem;
+      color: $oc-red-6;
+      text-align: center;
+      font-size: 0.85rem;
+    }
+    
+    input {
+      width: 100%;
+      font-size: 1.25rem;
+      margin-top: 0.5rem;
+      border: none;
+      border-bottom: 1px solid $oc-gray-3;
+      padding: 0.25rem;
+      outline: none;
+      border-radius: 4px;
+    }
+
+    .login {
+      background: $oc-blue-6;
+      text-align: center;
+      color: white;
+      font-weight: 500;
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+      cursor: pointer;
+      margin-top: 1rem;
+      font-size: 1.25rem;
+      &:hover {
+        background: $oc-blue-5;
+      }
+      &:active {
+        background: $oc-blue-6;
+      }
+    }
+  }
+```
+```javascript
+  // 로그인 모달을 위한 컨테이너 컴포넌트인 LoginModalContainer를 containers/modal 디렉터리 만들기
+  // src/containers/modal/LgoinModalContainer.js
+  import React, { Component } from 'react';
+  import LoginModal from 'components/modal/LoginModal';
+  import { connect } from 'react-redux';
+  import { bindActionCreators } from 'redux';
+  import * as baseActions from 'store/modules/base';
+
+  class LoginModalContainer extends Component {
+    handleLogin = () => {
+
+    }
+    handleCancel = () => {
+      const { BaseActions } = this.props;
+      BaseActions.hideModal('login');
+    }
+    handleChange = (e) => {
+
+    }
+    handleKeyPress = (e) => {
+
+    }
+    render() {
+      const {
+        handleLogin, handleCancel, handleCahnge, handleKeyPress
+      } = this;
+      const {visible} = this.props;
+
+      return (
+        <LoginModal
+          onLogin={handleLogin}
+          onCancel={handleCancel}
+          onChange={handleChange}
+          onKeyPress={handleKeyPress}
+          visible={visible}
+        ></LoginModal>
+      );
+    }
+  }
+
+  export default connet(
+    (state) => ({
+      visible: state.base.getIn(['modal', 'login'])
+    }),
+    (dispatch) => ({
+      BaseActions: bindActionCreators(baseActions, dispatch)
+    })
+  )(LoginModalContainer)
+  
+  /*
+    지금은 바로 구현 가능한 handleCancel 메서드만 준비하고, 나머지는 추후 구현
+    로그인 모달은 전역적으로 사용하는 모달이기 때문에  App에서 렌더링한다.
+    전역에서 사용할 컴포넌트가 많아지면 App 컴포넌트의 렌더 함수가 복잡해지므로 주의한다.
+
+    따라서 Base 컨테이너 컴포너트를 만들어 그 안에 LoginModalContainers를 렌더링 하기
+    Base를 컨테이너로 만드는 이유는 페이지를 새로고침할 때마다 현재 유저가 로그인 중인지 검증 하는데
+    이 작업을 Base 컴포넌트에서 처리한다.
+  */
+
+  // src/containers/common/Base.js
+  import React, { Component } from 'react';
+  import LoginModalContainer from 'containers/modal/LoginModalContainer';
+  import { connect } from 'react-redux';
+  import { bindActionCreators } from 'redux';
+  import * as baseActions from 'store/modules/base';
+
+  class Base extends Component {
+    initialize = async () => {
+      // 로그인 상태 확인(추후 작성)
+    }
+    componentDidMount() {
+      this.initialize();
+    }
+    render() {
+      return (
+        <div>
+          <LoginModalContainer>
+            {/*전역적으로 사용하는 컴포넌트들이 있다면 여기에서 렌더링 한다.*/}
+          </LoginModalContainer>
+        </div>
+      )
+    }
+  }
+  
+  export default connect({
+    null,
+    (dispatch) => ({
+      BaseActions: bindActionCreators(baseActions, dispatch)
+    })
+  })(Base);
+
+  // 이 컴포넌트는 App에서 Switch 아래쪽에서 렌더링 된다.
+  // src/components/App.js
+  import React from 'react';
+  import { Switch, Route } from 'react-router-dom';
+  import { ListPage, PostPage, EditorPage, NotFoundPage } from 'pages';
+  import Base from 'containers/ommon/Base';
+
+  const App = () => {
+    return (
+      <div>
+        <Switch>
+          (...)
+        </Switch>
+      </div>
+    );
+  }
+
+  export default App;
+```
+
+### Footer에서 관리자 로그인 버튼을 누르면 로그인 모달 띄우기
+```javascript
+  /*
+    Footer에서 나타나는 관리자 로그인 버튼을 누르면 로그인 모달 띄우기
+    Footer에서 리덕스 액션 호출을 통해야 하므로 FooterContainer 컴포넌트를 만든다.
+  */
+  // src/containers/common/FooterContainer.js
+  import React, { Component } from 'react';
+  import Footer from 'components/common/Footer';
+  import { connect } from 'react-redux';
+  import { bindActionCreators } from 'redux';
+  import * as baseActions from 'store/modules/base';
+
+  class FooterContainer extends Component {
+    handleLoginClick = async () => {
+      const { BaseActions } = this.props;
+      return (
+        <Footer onLoginClick={handleLoginClick}></Footer>
+      );
+    }
+  }
+
+  export default connect(
+    (state) => ({
+      // 추후 입력
+    }),
+    (dispatch) => ({
+      BaseActions: bindActionCreators(baseActions, dispatch)
+    })
+  )(FooterContainer)
+
+  /*
+    handleLoginClik 메서드를 만들어 이를 Footer에 onLoginClick props로 전달한 후
+    Footer 컴포넌트에서 이 함수를 받아 와 로그인 버튼에 onClik으로 설정해야 한다.
+  */
+  // src/components/common/Footer/Footer.js - Footer
+  const Footer = ({onLoginClick}) => (
+    <footer className={cx('footer')}>
+      <Link to="/" className={cx('brand')}>reactblog</Link>
+      <div onClick={onLoginClick} className={cx('admin-login')}>관리자 로그인</div>
+    </footer>
+  );
+
+  // PageTemplate 컴포넌트에서 기존 Footer 컴포넌트를 대체한다.
+  // src/components/common/PageTemplate/PageTemplate.js
+  import React from 'react';
+  import styles from './PageTemplate.scss';
+  import classNames from 'classnames/bind';
+  import HeaderContainer from 'containers/common/HeaderContainer';
+  import FooterConrainer from 'containers/common/FooterContainer';
+
+  const cx = classNames.bind(styles);
+
+  const PageTemplate = ({ children }) => {
+    <div className={cx('page-template')}>
+      <HeaderContainer>
+        <main>
+          {children}
+        </main>
+      </HeaderContainer>
+    </div>
+  }
+
+  export default PageTemplate;
+```
