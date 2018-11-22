@@ -2116,3 +2116,79 @@
     return;
   }
 ```
+
+### 로그인할 때만 포스트 작성, 수정, 삭제 버튼 보여 주기
+```javascript
+  /*
+    로그인 기능을 구현했으니, 이에 따라 비로그인 상태일 때는 기능을 제한한다.
+    비로그인 상태에서는 포스트 작성, 수정, 삭제를 할 수 없다.
+
+    기능을 제한하려면 먼저 HeaderContainer에서 스토어의 logged 값을 연동시키고, 이를 Header 컴포넌트로 전달한다.
+  */
+  // src/containers/common/HeaderContainer.js
+    (...)
+    render() {
+      const { handleRemove } = this;
+      const { match, logged } = this.props;
+
+      const { id } = match.params;
+
+      return (
+        <Header
+          postId={id}
+          logged={logged}
+          onRemove={handleRemove}
+        ></Header>
+      )
+    }
+  }
+
+  export default connect(
+    (state) => ({
+      logged: state.base.get('logged')
+    }),
+    (dispatch) => ({
+      BaseActions: bindActionCreators(baseActions, dispatch)
+    })
+  )(withRotuer(HeaderContainer));
+
+  // src/components/common/Header/Headr.js
+  (...)
+
+  const Header = ({ postId, logged, onRemove }) => (
+    <header className={cx('header')}>
+      <div className={cx('header-content')}>
+        <div className={cx('brand')}>
+          <Link to="/">reactblog</Link>
+        </div>
+        { 
+          logged && 
+          <div className={cx('right')}>
+            {
+              // flex를 유지하려고 배열 형태로 렌더링 한다.
+              postId && [
+                <Button key="edit" theme="online" to={`/editor?id=${postId}`}>수정</Button>
+                <Button key="remove" theme="online" onClick={onRemove}>삭제</Button>
+              ]
+            }
+            <Button theme="outline" to="/editor">새 포스트</Button>
+          </div> 
+        }
+      </div>
+    </header>
+  )
+
+  export default Header;
+  // 이제 로그인을 하지 않으면 헤더에서 오른쪽에 있던 버튼들이 사라지고, 로그인을 하면 다시 나타난다.
+  /*
+    정리
+      1. UI 준비하기(프리젠테이셔널 컴포넌트 만들기)
+      2. 리덕스 상태 관리하기
+      3. 컨테이너 컴포넌트 만들기
+
+    리액트로 웹 어플리케이션을 만든다는 것을 결국 이 세가지 작어을 반복
+    요구 사항에 따라 사전에 백엔드를 개발 해야 함
+
+    숙련공이 될수록 노하우 및 속도가 빨라질 것이다.
+  */
+```
